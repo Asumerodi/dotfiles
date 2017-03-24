@@ -24,7 +24,7 @@ main () {
       nflag "neovim python-neovim python \
             ghc-mod rust-racer clang shellcheck \
             eslint tidy go git" \
-      xflag "xmonad xmonad-contrib git"
+      xflag "xmonad qutebrowser mpv xmonad-contrib git"
   )
 
   # parse command line flags first
@@ -302,11 +302,13 @@ install_xflag () {
     # create needed dirs
     mkdir -p $HOME/.xmonad
     mkdir -p $HOME/.bin
+    mkdir -p $HOME/.config/mpv
 
     # create symbolic links
     ln -s $srcdir/src/xinitrc   $HOME/.xinitrc
     ln -s $srcdir/src/zprofile  $HOME/.zprofile
     ln -s $srcdir/src/stoggle   $HOME/.bin/stoggle
+    ln -s $srcdir/src/mpv.conf  $HOME/.config/mpv/mpv.conf
     ln -s $srcdir/src/xmonad.hs $HOME/.xmonad/xmonad.hs
     ln -s $srcdir/src/autostart $HOME/.xmonad/autostart
 
@@ -329,6 +331,7 @@ install_xflag () {
     rm -f    $HOME/.bin/stoggle
     rm -f    $HOME/.xinitrc
     rm -f    $HOME/.zprofile
+    rm -rf   $HOME/.config/mpv
     rm -rf   $HOME/.xmonad
   fi
 }

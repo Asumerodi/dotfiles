@@ -1,5 +1,8 @@
 # dotfiles
-> **usage: dotinstl [-ahitvxz]**
+### About
+My preferred configuration for `Zsh`, `Tmux`, `Neovim` and `Xmonad`.
+### Usage
+> **dotinstl [-ahitvxz]**
 > > **-a** &nbsp; &nbsp; *Install all dotfiles* <br />
 **-h** &nbsp; &nbsp; *Print this usage message* <br />
 **-i** &nbsp; &nbsp; *Install dependencies for chosen dotfiles* <br />
