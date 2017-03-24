@@ -1,0 +1,12 @@
+#!/usr/bin/zsh
+xset -q |
+  grep 'DPMS is' |
+  awk '{print $3}' |
+  read state
+
+if [[ $state == Enabled ]]; then
+  xset -dpms
+  xautolock -disable; else
+  xset +dpms
+  xautolock -enable
+fi

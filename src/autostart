@@ -1,0 +1,12 @@
+#!/usr/bin/zsh
+
+if ! pgrep -x st; then
+  if ! pgrep -x "tmux: server"; then
+    st -e tmux new-session -s $(whoami)&!; else
+    st -e tmux attach-session -t $(whoami)&!
+  fi
+fi
+
+if ! pgrep -f qutebrowser; then
+  qutebrowser --backend webengine&!
+fi

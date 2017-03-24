@@ -1,0 +1,10 @@
+unclutter --timeout 2 &
+xset +dpms &
+xautolock -locker "systemctl suspend" &
+pgrep -x xss-lock ||
+  xss-lock -- /usr/bin/slock &
+xbanish &
+xsetroot -cursor_name left_ptr &
+compton --vsync opengl-swc --paint-on-overlay --unredir-if-possible\
+  --backend glx --glx-no-stencil -b
+exec xmonad

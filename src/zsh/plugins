@@ -1,0 +1,15 @@
+Valiev/almostontop
+hcgraf/zsh-sudo
+sharat87/zsh-vim-mode
+zlsun/solarized-man
+joel-porquet/zsh-dircolors-solarized
+Tarrasch/zsh-mcd
+willghatch/zsh-cdr
+mafredri/zsh-async
+zsh-users/zsh-completions
+caarlos0/ports kind:path
+
+# always last
+sindresorhus/pure
+zsh-users/zsh-syntax-highlighting
+zsh-users/zsh-history-substring-search

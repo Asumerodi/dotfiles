@@ -1,0 +1,336 @@
+#!/usr/bin/zsh
+setopt extendedglob
+# fullpath to script dir
+srcdir=$(/bin/readlink -f ${0%/*})
+# script name
+sctname=$0
+
+# main script logic; called at the very end of the script
+main () {
+  # print usage if no args passed
+  if [[ -z $@ ]]; then
+    usage
+    exit 1
+  fi
+
+  # array for passed flags
+  local -Ua flags
+  # array for missing dependencies
+  local -Ua no_deps
+  # archlinux dependencies TODO add other distros TODO
+  local -Ar arcdeps=( \
+      zflag "antibody trash-cli git" \
+      tflag "tmux bind-tools git" \
+      nflag "neovim python-neovim python \
+            ghc-mod rust-racer clang shellcheck \
+            eslint tidy go git" \
+      xflag "xmonad xmonad-contrib git"
+  )
+
+  # parse command line flags first
+  parse_opts $@
+  # check for installed dependencies
+  dep_check
+  # check if iflag is specified and if so install missing dependencies
+  (( ${flags[(I)iflag]} )) &&
+    install_deps
+  # if dependencies were not installed and still missing exit
+   [[ -z $no_deps ]] ||
+   {
+     print -u2 "depenencies are not satisfied.\ntry installing with -i"
+     exit 1
+   }
+   # if aflag is passed install all dotfiles
+   if (( ${flags[(I)aflag]} )); then
+    install_all
+  else
+    # otherwise only install those specified on command line
+    for flag in ${flags[@]/(aflag|uflag)}; do
+      install_${flag} &
+    done
+  fi
+  wait
+}
+
+# simple arguement parsing
+parse_opts () {
+  while getopts :ahintuxz opt; do
+    case $opt in
+      a) flags+=aflag;;
+      h) usage
+         exit 0 ;;
+      i) flags+=iflag;;
+      n) flags+=nflag;;
+      t) flags+=tflag;;
+      u) flags+=uflag;;
+      x) flags+=xflag;;
+      z) flags+=zflag;;
+      *) usage
+         exit 1 ;;
+    esac
+  done
+}
+
+# print usage function
+usage () {
+  cat <<EOF
+usage: ${sctname##*/} [-ahitvxz]
+
+  -a      Install all dotfiles
+  -h      Print this usage message
+  -i      Install dependencies for chosen dotfiles
+  -n      Install Neovim dotfiles
+  -t      Install Tmux dotfiles
+  -u      Uninstall chosen dotfiles
+  -x      Install Xmonad dotfiles
+  -z      Install Zsh dotfiles
+EOF
+}
+
+# check for installed dependencies
+dep_check () {
+  # check which *nix your using based on your package manager TODO add more TODO
+  if type -p pacman &> /dev/null; then
+    local -r pkgsearch="pacman -Q"
+    local -r depends=arcdeps
+  else
+    print -u2 "your *nix is not supported"
+    exit 1
+  fi
+
+  # function to check for installed packages; called in for loops below
+  check_pac () {
+    {$pkgsearch $1 || $pkgsearch ${1}-git} &> /dev/null ||
+        {
+          print -c -u2 "$1" "is not installed"
+          no_deps+=$1
+        }
+  }
+
+  # if aflag is present check all depends else check only those specified
+  # change word split to sh style so for loop will expand on spaces
+  setopt shwordsplit
+  if (( ${flags[(I)aflag]} )); then
+    for key in ${(P@k)depends}; do
+      for dep in ${${(P)depends}[$key]}; do
+        check_pac $dep
+      done
+    done
+  else
+    for flag in ${flags[@]/(aflag|uflag)}; do
+      for dep in ${${(P)depends}[$flag]}; do
+        check_pac $dep
+      done
+    done
+  fi
+  unsetopt shwordsplit
+}
+
+install_deps () {
+  # function to build/install yaourt and deps; called below only if not in PATH
+  build_yaourt () {
+    # every command in the following block must exit successfully
+    {
+      git clone https://aur.archlinux.org/package-query.git \
+        /tmp/package-query &> /dev/null &&
+      cd /tmp/package-query &&
+      makepkg -si --noconfirm &&
+      cd - &&
+      git clone https://aur.archlinux.org/yaourt.git \
+        /tmp/yaourt &> /dev/null &&
+      cd /tmp/yaourt &&
+      makepkg -si --noconfirm &&
+      cd - &&
+      yaourt -S $no_deps --noconfirm &&
+      no_deps=()
+    } ||
+      # if they don't print error
+      print -u2 "yaourt failed to install; dependencies not installed properly"
+    rm -rf /tmp/yaourt
+    rm -rf /tmp/package-query
+  }
+
+  # check first if any dependencies actually need installing
+  if [[ -z $no_deps ]]; then
+    print "all dependencies are already installed... continuing"
+  else
+    # if yaourt exists just install dependencies and continue
+    if type -p yaourt &> /dev/null; then
+      yaourt -S $no_deps --noconfirm &&
+      no_deps=()
+    # otherwise build yaourt; install it and then install dependencies
+    elif type -p pacman &> /dev/null; then
+      print "yaourt not detected building it..."
+      # make sure either base-devel or multilib-devel group is installed
+      local -r bds=($(pacman -Sg base-devel)) bdq=($(pacman -Qg base-devel)) \
+        mds=($(pacman -Sg multilib-devel)) mdq=($(pacman -Qg multilib-devel))
+      if ! [[ $bds == $bdq ]] && ! [[ $mds == $mdq ]]; then
+        # if they are not then install base-devel and build yaourt
+        sudo pacman -S base-devel --noconfirm &&
+          build_yaourt
+      else
+        #otherwise just built yaourt and install deps with it
+        build_yaourt
+      fi
+    else
+    # if no compatible package manager is detected skip installing deps
+      print -u2 "installing dependecies only works on Arch Linux... skipping"
+    fi
+  fi
+}
+
+install_all () {
+  install_zflag &
+  install_tflag &
+  install_nflag &
+  install_xflag &
+}
+install_zflag () {
+  # create needed dir
+  mkdir -p $HOME/.bin
+
+  # create symbolic links only if the files don't already exist
+  if ! (( ${flags[(I)uflag]} )); then
+    print "zsh start"
+    {
+      ln -s  $srcdir/src/zshenv $HOME/.zshenv
+      ln -s  $srcdir/src/zshrc  $HOME/.zshrc
+      ln -sT $srcdir/src/zsh    $HOME/.zsh
+
+    # create sourable plugins file
+    [[ -a $HOME/.zsh/plugins.zsh ]] ||
+    {
+      antibody bundle < $srcdir/src/zsh/plugins > $srcdir/src/zsh/plugins.zsh
+
+      # move a few lines to the bottom in the following order for proper loading
+      sed -i '/pure.plugin/ { H; d; }; $ { p; x; }'  $srcdir/src/zsh/plugins.zsh
+      sed -i '/zsh-syntax/ { H; d; }; $ { p; x; }'   $srcdir/src/zsh/plugins.zsh
+      sed -i '/zsh-history/ { H; d; }; $ { p; x; }'  $srcdir/src/zsh/plugins.zsh
+      sed -i '/zsh-vim-mode/ { H; d; }; $ { p; x; }' $srcdir/src/zsh/plugins.zsh
+
+    # initialize submodule for dircolors-solarized
+      cd $HOME/.cache/antibody/*joel*/
+      git submodule init
+      git submodule update
+      cd -
+
+    # create dircolors file
+      zsh -ic "setupsolarized dircolors.ansi-dark"
+    }
+    } &> /dev/null
+    print "zsh done"
+  else
+    # uninstall when uflag is passed
+    print "uninstalling zsh dotfiles..."
+    rm -f    $HOME/.zshenv
+    rm -f    $HOME/.zshrc
+    rm -f    $HOME/.zsh
+    rm -f    $HOME/.zsh-dircolors.config
+    rm -f    $srcdir/src/zsh/plugins.zsh
+    rm -rf   $HOME/.cache/antibody
+  fi
+}
+install_tflag () {
+  if ! (( ${flags[(I)uflag]} )); then
+    print "tmux start"
+    {
+    # create needed dir
+    mkdir -p $HOME/.bin
+
+    # create symbolic links only if files don't exist
+      ln -s $srcdir/src/tmux.conf     $HOME/.tmux.conf
+      ln -s $srcdir/src/tmuxline.conf $HOME/.tmuxline.conf
+      ln -s $srcdir/src/ipaddr        $HOME/.bin/ipaddr
+
+    # install tmux plugin manager and run script to install plugins
+    [[ -a $HOME/.tmux/plugins/tpm ]] ||
+    {
+      git clone https://github.com/tmux-plugins/tpm $HOME/.tmux/plugins/tpm
+      $HOME/.tmux/plugins/tpm/bin/install_plugins
+    }
+    } &> /dev/null
+    print "tmux done"
+  else
+    # uninstall when uflag is passed
+    print "uninstalling tmux dotfiles..."
+    rm -f    $HOME/.tmux.conf
+    rm -f    $HOME/.tmuxline.conf
+    rm -f    $HOME/.bin/ipaddr
+    rm -rf   $HOME/.tmux
+  fi
+}
+install_nflag () {
+  if ! (( ${flags[(I)uflag]} )); then
+    print "nvim start"
+    {
+    # create needed dirs
+    mkdir -p $HOME/.config/nvim
+    mkdir -p $HOME/.bin
+
+    # create symbolic links
+      ln -s  $srcdir/src/init.vim    $HOME/.config/nvim/init.vim
+      ln -s  $srcdir/src/init.vim    $HOME/.vimrc
+      ln -sT $HOME/.config/nvim      $HOME/.vim
+      ln -sT $srcdir/src/nvimplugins $HOME/.config/nvim/plugins
+
+    # install dein plugin manager
+    [[ -a $HOME/.config/nvim/dein ]] ||
+    {
+      curl \
+      https://raw.githubusercontent.com/Shougo/dein.vim/master/bin/installer.sh\
+        > /tmp/installer.sh
+      sh /tmp/installer.sh $HOME/.config/nvim/dein
+      rm -f /tmp/installer.sh
+    }
+
+    # load nvim and install plugins; if clause in vimrc will install missing
+      nvim --headless +qall
+    } &> /dev/null
+    print "nvim done"
+  else
+    # uninstall when uflag is passed
+    print "uninstalling nvim dotfiles..."
+    rm -f    $HOME/.vimrc
+    rm -f    $HOME/.vim
+    rm -rf   $HOME/.config/nvim
+  fi
+}
+install_xflag () {
+  if ! (( ${flags[(I)uflag]} )); then
+    print "x11 start"
+    {
+    # create needed dirs
+    mkdir -p $HOME/.xmonad
+    mkdir -p $HOME/.bin
+
+    # create symbolic links
+    ln -s $srcdir/src/xinitrc   $HOME/.xinitrc
+    ln -s $srcdir/src/zprofile  $HOME/.zprofile
+    ln -s $srcdir/src/stoggle   $HOME/.bin/stoggle
+    ln -s $srcdir/src/xmonad.hs $HOME/.xmonad/xmonad.hs
+    ln -s $srcdir/src/autostart $HOME/.xmonad/autostart
+
+    # make and install dzvol
+    [[ -a $HOME/.bin/dzvol ]] ||
+    {
+    git clone https://github.com/allevaton/dzvol /tmp/dzvol
+    cd /tmp/dzvol
+      make
+      mv dzvol $HOME/.bin/dzvol
+    cd -
+    rm -rf /tmp/dzvol
+    }
+    } &> /dev/null
+    print "x11 done"
+  else
+    # uninstall when uflag is passed
+    print "uninstalling x11 dotfiles..."
+    rm -f    $HOME/.bin/dzvol
+    rm -f    $HOME/.bin/stoggle
+    rm -f    $HOME/.xinitrc
+    rm -f    $HOME/.zprofile
+    rm -rf   $HOME/.xmonad
+  fi
+}
+
+ main $@

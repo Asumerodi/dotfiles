@@ -1,0 +1,69 @@
+{
+  # Zsh options
+  setopt extendedglob
+  setopt incappendhistory
+  setopt sharehistory
+  setopt histignoredups
+  setopt histreduceblanks
+  setopt histignorespace
+  setopt autocd
+  setopt cdablevars
+  setopt nomultios
+  setopt pushdignoredups
+  setopt autocontinue
+  setopt promptsubst
+
+  # Environment
+  HISTSIZE=1000
+  SAVEHIST=1000
+  HISTFILE=$HOME/.history
+  DIRSTACKSIZE=5
+
+  # Sources
+  . $HOME/.zsh/aliases.zsh
+  # Command not found package reccomend
+  type -p pkgfile &&
+    . /usr/share/doc/pkgfile/command-not-found.zsh
+
+  # user defined functions
+  if [[ -d $HOME/.zfunctions ]]; then
+    typeset -U fpath
+    fpath=($HOME/.zfunctions $fpath)
+  fi
+
+  # source local config not synced to git repo
+  if [[ -f $HOME/.zshlocal ]]; then
+    . $HOME/.zshlocal
+  fi
+
+  # antibody plugins
+  . $HOME/.zsh/plugins.zsh
+
+  # history substring search keybinds
+  bindkey '^[OA' history-substring-search-up
+  bindkey '^[OB' history-substring-search-down
+
+  #load compinit
+  autoload -Uz compinit
+  typeset -i updated_at=$(date +'%j' -r ~/.zcompdump ||
+    stat -f '%Sm' -t '%j' ~/.zcompdump)
+  if [ $(date +'%j') != $updated_at ]; then
+    compinit
+  else
+    compinit -C
+  fi
+
+  # Case insens only when no case match; after all completions loaded
+  zstyle ':completion:*' matcher-list \
+    '' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+
+  # Auto rehash for new binaries
+  zstyle ':completion:*' rehash true
+
+  # Key binds
+  bindkey "jj" vi-cmd-mode
+  bindkey -v '^?' backward-delete-char
+
+  # keep shell state frozen
+  ttyctl -f
+} &> /dev/null
