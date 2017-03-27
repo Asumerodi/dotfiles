@@ -1,0 +1,47 @@
+options () {
+  if [[ -z $@ ]]; then
+    usage
+    exit 1
+  fi
+
+  options::parse $@
+  # if any invalid arguement combinations print usage and exit
+  if
+    {
+      ! (( ${FLAGS[(I)ALL]} )) \
+        && ! (( ${FLAGS[(I)zsh]} )) \
+        && ! (( ${FLAGS[(I)tmux]} )) \
+        && ! (( ${FLAGS[(I)neovim]} )) \
+        && ! (( ${FLAGS[(I)x11]} ))
+    } \
+      || {
+        (( ${FLAGS[(I)INSTALL]} )) && (( ${FLAGS[(I)UNINSTALL]} ))
+      }
+  then
+    usage
+    exit 1
+  fi
+}
+
+options::parse () {
+  while getopts ':aiuztnxh' flag; do
+    case ${flag} in
+      a) FLAGS+=ALL;;
+      i) FLAGS+=INSTALL;;
+      u) FLAGS+=UNINSTALL;;
+      z) FLAGS+=zsh;;
+      t) FLAGS+=tmux;;
+      n) FLAGS+=neovim;;
+      x) FLAGS+=x11;;
+      h)
+        usage
+        exit 0
+        ;;
+      *)
+        usage
+        exit 1
+        ;;
+    esac
+  done
+  readonly FLAGS
+}
