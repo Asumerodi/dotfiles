@@ -38,6 +38,7 @@ call dein#add('jez/vim-ispc')
 call dein#add('Firef0x/PKGBUILD.vim')
 
 " --- Functionality plugins ---
+call dein#add('Shougo/vimproc.vim', {'build' : 'make'})
 call dein#add('scrooloose/syntastic')
 call dein#add('kien/ctrlp.vim')
 call dein#add('tpope/vim-surround')

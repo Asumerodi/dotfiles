@@ -1,10 +1,14 @@
 import           Graphics.X11.ExtraTypes.XF86
 import           XMonad
 import           XMonad.Config.Desktop
+import           XMonad.Hooks.ICCCMFocus
+import           XMonad.Hooks.SetWMName
 import           XMonad.Layout.NoBorders
 import           XMonad.Util.EZConfig         (additionalKeys)
 
-start = spawn "$HOME/.xmonad/autostart"
+start = do
+  spawn "$HOME/.xmonad/autostart"
+  setWMName "LG3D"
 
 myLayout = smartBorders tiled ||| noBorders Full
   where
@@ -26,6 +30,7 @@ main = xmonad $ desktopConfig
   , startupHook = start
   , focusedBorderColor = "#CB4B16"
   , normalBorderColor = "#93A1A1"
+  , logHook = takeTopFocus
   } `additionalKeys`
         -- toggle fullscreen, dpms and xautolock
       [ ((modm              , xK_space               ),
