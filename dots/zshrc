@@ -6,6 +6,7 @@
   setopt histignoredups
   setopt histreduceblanks
   setopt histignorespace
+  setopt histallowclobber
   setopt autocd
   setopt cdablevars
   setopt nomultios
