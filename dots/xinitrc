@@ -1,3 +1,4 @@
+#!/bin/bash
 unclutter --timeout 2 &
 xset +dpms &
 xautolock -locker "systemctl suspend" &
