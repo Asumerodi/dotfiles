@@ -35,12 +35,12 @@ main () {
 
   # archlinux dependencies TODO add other distros TODO
   local -Ar YAOURT_DEPENDENCIES=( \
-      zsh "antibody trash-cli git" \
+      zsh "antibody lsof trash-cli git" \
       tmux "tmux bind-tools git powerline-fonts-git" \
       neovim "neovim python-neovim python \
             ghc-mod rust-racer clang shellcheck \
             eslint tidy go git" \
-      x11 "xmonad qutebrowser mpv xss-lock xautolock \
+      x11 "xmonad qutebrowser mpv xss-lock-git xautolock \
       xbanish unclutter-xfixes-git slock xorg-xsetroot \
       compton xmonad-contrib git"
   )
