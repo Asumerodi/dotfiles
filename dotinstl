@@ -29,6 +29,7 @@ usage: ${SCRIPT_NAME} [-aztnxi]
   -u      Uninstall chosen dotfiles
   -z      Install Zsh dotfiles
   -t      Install Tmux dotfiles
+  -g      Install GHCi dotfiles
   -n      Install Neovim dotfiles
   -x      Install X11 dotfiles
   -h      Print this usage message
@@ -45,6 +46,7 @@ main () {
   # archlinux dependencies TODO add other distros TODO
   local -Ar YAOURT_DEPENDENCIES=( \
       zsh "antibody lsof trash-cli git" \
+      ghci "ghc haskell-stack haskell-hscolour haskell-pretty-show" \
       tmux "tmux bind-tools git powerline-fonts-git" \
       neovim "neovim python-neovim python \
             ghc-mod rust-racer clang shellcheck \

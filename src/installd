@@ -27,6 +27,7 @@ installd::spinner () {
 installd::all () {
   installd::zsh
   installd::tmux
+  installd::ghci
   installd::neovim
   installd::x11
 }
@@ -153,6 +154,44 @@ installd::tmux () {
     rm -rf   ${HOME}/.tmux
   fi
 }
+
+installd::ghci () {
+  local -i existing_dotfiles
+
+  if ! (( ${FLAGS[(I)UNINSTALL]} )); then
+      # create needed dirs
+      mkdir -p ${HOME}/.ghc
+
+      installd::spinner "ghci  " &
+
+      # create symbolic links
+      ln -s ${DOTDIR}/ghci   ${HOME}/.ghc/ghci.conf \
+        || existing_dotfiles+=1
+      ln -s ${DOTDIR}/ghci.extra.hs  ${HOME}/.ghc/ghci.extra.hs \
+        || existing_dotfiles+=1
+
+    [[ $existing_dotfiles == 0 ]] \
+      || {
+        kill %%
+        print -u2 "${RED}ghci dotfiles failed to install${COLOR_OFF}"
+        return 1
+      }
+
+      {
+        stack setup
+        stack ghc --package pretty-show --package hscolour
+      } &> /dev/null
+
+    kill %%
+    printf "  ghci   done${GREEN} ✓  ${COLOR_OFF}\n"
+  else
+    # uninstall when UNINSTALL is passed
+    print "${RED}uninstalled${COLOR_OFF} ghci   dotfiles"
+    rm -f    ${HOME}/.ghc/ghci.extra.hs
+    rm -f    ${HOME}/.ghc/ghci
+  fi
+}
+
 installd::neovim () {
   local -r \
    diu=https://raw.githubusercontent.com/Shougo/dein.vim/master/bin/installer.sh
@@ -213,6 +252,7 @@ installd::neovim () {
     rm -rf   ${HOME}/.config/nvim
   fi
 }
+
 installd::x11 () {
   local -i existing_dotfiles
 

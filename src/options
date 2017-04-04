@@ -11,6 +11,7 @@ options () {
       ! (( ${FLAGS[(I)ALL]} )) \
         && ! (( ${FLAGS[(I)zsh]} )) \
         && ! (( ${FLAGS[(I)tmux]} )) \
+        && ! (( ${FLAGS[(I)ghci]})) \
         && ! (( ${FLAGS[(I)neovim]} )) \
         && ! (( ${FLAGS[(I)x11]} ))
     } \
@@ -24,13 +25,14 @@ options () {
 }
 
 options::parse () {
-  while getopts ':aiuztnxh' flag; do
+  while getopts ':aiuztgnxh' flag; do
     case ${flag} in
       a) FLAGS+=ALL;;
       i) FLAGS+=INSTALL;;
       u) FLAGS+=UNINSTALL;;
       z) FLAGS+=zsh;;
       t) FLAGS+=tmux;;
+      g) FLAGS+=ghci;;
       n) FLAGS+=neovim;;
       x) FLAGS+=x11;;
       h)

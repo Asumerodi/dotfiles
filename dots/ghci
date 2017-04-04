@@ -1,0 +1,24 @@
+:set prompt "\ESC[0;34m%s\n\ESC[0;32mλ \ESC[0;35m❯ \ESC[m\STX"
+:set prompt2 "\ESC[0;32mλ \ESC[0;5;35m❯ \ESC[m\STX"
+
+:set -XOverloadedStrings
+
+-- specify variable types inside a function
+:set -XScopedTypeVariables
+
+
+-- make sure prelude is in so following hoogle function works
+import Prelude
+
+-- give us a `hoogle` function if the hoogle binary is available
+let escape arg = "'" ++ ((\c -> if c == '\'' then "'\"'\"'" else [c]) =<< arg) ++"'"
+:def! search return . (":!hoogle --count=50 --color " ++) . escape
+:def! doc return . (":!hoogle --count=50 --color --info " ++) . escape
+
+-- multi-line expressions
+:set +m
+
+:def color \_ -> pure ":l ~/.ghc/ghci.extra.hs\n:set -interactive-print=myPrint\n:m -Extra"
+:def ncolor \_ -> pure ":set -interactive-print=print"
+:def rr \_ -> pure ":reload\n:color"
+:color
