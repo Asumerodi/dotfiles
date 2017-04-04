@@ -36,6 +36,7 @@ call dein#add('rust-lang/rust.vim')
 call dein#add('jez/vim-c0')
 call dein#add('jez/vim-ispc')
 call dein#add('Firef0x/PKGBUILD.vim')
+call dein#add('enomsg/vim-haskellConcealPlus')
 
 " --- Functionality plugins ---
 call dein#add('Shougo/vimproc.vim', {'build' : 'make'})
