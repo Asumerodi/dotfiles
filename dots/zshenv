@@ -8,4 +8,4 @@
 
   type -p qutebrowser &&
     BROWSER=qutebrowser
-} &> /dev/null
+} > /dev/null

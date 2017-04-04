@@ -67,4 +67,4 @@
 
   # keep shell state frozen
   ttyctl -f
-} &> /dev/null
+} > /dev/null
