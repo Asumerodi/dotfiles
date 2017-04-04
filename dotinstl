@@ -12,6 +12,13 @@ alias exists="> /dev/null type -p"
 . ${SRCDIR}/dependencies
 . ${SRCDIR}/installd
 
+finish () {
+  rm -rf /tmp/package-query
+  rm -rf /tmp/yaourt
+  rm -rf /tmp/dzvol
+  rm -f  /tmp/installer.sh
+}
+
 usage () {
   cat <<EOF
 usage: ${SCRIPT_NAME} [-aztnxi]
@@ -29,6 +36,8 @@ EOF
 }
 
 main () {
+  trap "trap - SIGTERM && finish && kill -- -$$" SIGINT SIGTERM
+
   local -Ua \
     FLAGS \
     missing_dependencies
