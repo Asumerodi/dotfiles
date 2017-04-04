@@ -1,5 +1,5 @@
 #!/usr/bin/zsh
 if ! dig +short myip.opendns.com @resolver1.opendns.com 2>&1 |
   grep -E '[0-9]*\.[[0-9]*\.[0-9]*\.[0-9]*'; then
-    echo -e "\xE2\x98\xA0"
+    printf "\xE2\x98\xA0"
 fi
