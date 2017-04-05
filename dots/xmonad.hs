@@ -33,27 +33,33 @@ main = xmonad $ desktopConfig
   , logHook = takeTopFocus
   } `additionalKeys`
         -- toggle fullscreen, dpms and xautolock
-      [ ((modm              , xK_space               ),
-        layoutToggle                                   )
+      [ ( ( modm              , xK_space                )
+        , layoutToggle                                                  )
         -- lower volume
-      , ((0                 , xF86XK_AudioLowerVolume),
-        spawn "pactl set-sink-volume 0 -1%; dzvol"     )
+      , ( ( 0                 , xF86XK_AudioLowerVolume )
+        , spawn "pactl set-sink-volume 0 -1%; dzvol"                    )
         -- raise volume
-      , ((0                 , xF86XK_AudioRaiseVolume),
-        spawn "pactl set-sink-volume 0 +1%; dzvol"     )
+      , ( ( 0                 , xF86XK_AudioRaiseVolume )
+        , spawn "pactl set-sink-volume 0 +1%; dzvol"                    )
         -- mute volume
-      , ((0                 , xF86XK_AudioMute       ),
-        spawn "pactl set-sink-mute 0 toggle; dzvol"    )
+      , ( ( 0                 , xF86XK_AudioMute        )
+        , spawn "pactl set-sink-mute 0 toggle; dzvol"                   )
         -- start qutebrowser
-      , ((modm              , xK_b                   ),
-        spawn "qutebrowser --backend webengine"        )
+      , ( ( modm              , xK_b                    )
+        , spawn "qutebrowser --backend webengine"                       )
         -- start qutebrowser with nvidia card
-      , ((modm .|. shiftMask, xK_b                   ),
-        spawn "optirun qutebrowser --backend webengine")
+      , ( ( modm .|. shiftMask, xK_b                    )
+        , spawn "optirun qutebrowser --backend webengine"               )
         -- screen lock
-      , ((modm .|. shiftMask, xK_l                   ),
-        spawn "loginctl lock-session"                  )
+      , ( ( modm .|. shiftMask, xK_l                    )
+        , spawn "loginctl lock-session"                                 )
+        -- screenshot
+      , ( ( modm , xK_Print                             )
+        , spawn "scrot $(date '+%s')_'$wx$h'.png -e 'mv $f ~/shots'"    )
+        -- screenshot focused window
+      , ( ( modm .|. shiftMask, xK_Print                )
+        , spawn "scrot -u $(date '+%s')_'$wx$h'.png -e 'mv $f ~/shots'" )
         -- toggle touchpad
-      , ((0                 , xF86XK_TouchpadToggle  ),
-        spawn "touchtoggle"                            )
+      , ( ( 0                 , xF86XK_TouchpadToggle   )
+        , spawn "touchtoggle"                                           )
       ]
