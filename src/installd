@@ -41,9 +41,9 @@ installd::zsh () {
 
     installd::spinner "zsh   " &
 
-    ln -s  ${DOTDIR}/zshenv ${HOME}/.zshenv \
-      || existing_dotfiles+=1
     ln -s  ${DOTDIR}/zshrc  ${HOME}/.zshrc \
+      || existing_dotfiles+=1
+    ln -s ${DOTDIR}/zprofile  ${HOME}/.zprofile \
       || existing_dotfiles+=1
     ln -sT ${DOTDIR}/zsh    ${HOME}/.zsh \
       || existing_dotfiles+=1
@@ -97,8 +97,8 @@ installd::zsh () {
   else
     # uninstall when UNINSTALL is passed
     print "${RED}uninstalled${COLOR_OFF} zsh    dotfiles"
-    rm -f    ${HOME}/.zshenv
     rm -f    ${HOME}/.zshrc
+    rm -f    ${HOME}/.zprofile
     rm -f    ${HOME}/.zsh
     rm -f    ${HOME}/.zsh-dircolors.config
     rm -f    ${DOTDIR}/zsh/plugins.zsh
@@ -267,8 +267,6 @@ installd::x11 () {
       # create symbolic links
       ln -s ${DOTDIR}/xinitrc   ${HOME}/.xinitrc \
         || existing_dotfiles+=1
-      ln -s ${DOTDIR}/zprofile  ${HOME}/.zprofile \
-        || existing_dotfiles+=1
       ln -s ${DOTDIR}/stoggle   ${HOME}/.bin/stoggle \
         || existing_dotfiles+=1
       ln -s ${DOTDIR}/mpv.conf  ${HOME}/.config/mpv/mpv.conf \
@@ -309,7 +307,6 @@ installd::x11 () {
     rm -f    ${HOME}/.bin/dzvol
     rm -f    ${HOME}/.bin/stoggle
     rm -f    ${HOME}/.xinitrc
-    rm -f    ${HOME}/.zprofile
     rm -rf   ${HOME}/.config/mpv
     rm -rf   ${HOME}/.xmonad
   fi
