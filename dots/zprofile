@@ -1,12 +1,4 @@
 {
-if [[ -z $DISPLAY ]] && [[ -n $XDG_VTNR ]] && [[ $XDG_VTNR -gt 2 ]]; then
-  EGL_PLATFORM=0x31D7
-  export EGL_PLATFORM
-fi
-
-if [[ -z $DISPLAY ]] && [[ -n $XDG_VTNR ]] && [[ $XDG_VTNR -eq 1 ]]; then
-  exec startx
-fi
   typeset -U path
   path=($HOME/.bin $path)
   export PATH
@@ -24,4 +16,13 @@ fi
       BROWSER=qutebrowser
       export BROWSER
     }
+
+  if [[ -z $DISPLAY ]] && [[ -n $XDG_VTNR ]] && [[ $XDG_VTNR -gt 2 ]]; then
+    EGL_PLATFORM=0x31D7
+    export EGL_PLATFORM
+  fi
+
+  if [[ -z $DISPLAY ]] && [[ -n $XDG_VTNR ]] && [[ $XDG_VTNR -eq 1 ]]; then
+    exec startx
+  fi
 } > /dev/null
