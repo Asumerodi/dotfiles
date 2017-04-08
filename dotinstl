@@ -53,7 +53,7 @@ main () {
             eslint tidy go git" \
       x11 "xmonad qutebrowser mpv xss-lock-git xautolock \
       xbanish unclutter-xfixes-git slock xorg-xsetroot \
-      compton xmonad-contrib scrot git"
+      compton xmonad-contrib scrot xorg-xset git"
   )
 
   options $@
