@@ -17,6 +17,8 @@ finish () {
   rm -rf /tmp/yaourt
   rm -rf /tmp/dzvol
   rm -f  /tmp/installer.sh
+  rm -f /tmp/pyth3-pypeg.deb
+  rm -f /tmp/qutebrowser.deb
 }
 
 usage () {

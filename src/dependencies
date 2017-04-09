@@ -132,6 +132,9 @@ dependencies::install::ubuntu () {
 
           sudo apt-get install -y /tmp/python3-pypeg.deb
           sudo apt-get install -y /tmp/qutebrowser.deb
+
+          rm -f /tmp/pyth3-pypeg.deb
+          rm -f /tmp/qutebrowser.deb
         }
     }
 }
