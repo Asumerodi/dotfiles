@@ -51,7 +51,7 @@ dependencies::check::package () {
   {
     ${=search_pkg_db} ${package} \
       || ${=search_pkg_db} ${package}-git
-  } &> /dev/null \
+  } > /dev/null \
     || {
       print -c -u2 "${package}" "is not installed"
       missing_dependencies+=${package}
