@@ -119,6 +119,18 @@ dependencies::install::ubuntu () {
       exists antibody \
         || curl -sL https://git.io/antibody | bash -s
     }
+
+  (( ${FLAGS[(I)neovim]} )) || (( ${FLAGS[(I)ALL]} )) \
+    && {
+      exits neovim \
+        || {
+          sudo add-apt-repository -y ppa:neovim/unstable
+          sudo apt-get -y update
+          sudo apt-get install -y neovim python3-pip
+          pip3 install --upgrade neovim
+        }
+    }
+
   (( ${FLAGS[(I)x11]} )) || (( ${FLAGS[(I)ALL]} )) \
     && {
       exists qutebrowser \
