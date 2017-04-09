@@ -41,7 +41,7 @@ main () {
 
   { [[ $ZSH_VERSION > 5.2 ]] || [[ $ZSH_VERSION == 5.2 ]] } \
     || {
-      printf "zsh version must be higher than 5.2"
+      printf "zsh version must be higher than 5.2\n"
       exit
     }
 
