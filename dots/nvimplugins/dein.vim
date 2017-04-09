@@ -37,6 +37,7 @@ call dein#add('jez/vim-c0')
 call dein#add('jez/vim-ispc')
 call dein#add('Firef0x/PKGBUILD.vim')
 call dein#add('enomsg/vim-haskellConcealPlus')
+call dein#add('lervag/vimtex')
 
 " --- Functionality plugins ---
 call dein#add('Shougo/vimproc.vim', {'build' : 'make'})
