@@ -17,7 +17,7 @@ alias la="ls -lah"
 alias se="sudoedit"
 alias df="df -h"
 alias du="du -h -c"
-alias sudo='sudo '
+alias sudo='sudo -E '
 alias pd="pushd"
 type -p trash-put && {
   alias tp="trash-put"
