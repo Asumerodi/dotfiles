@@ -39,6 +39,12 @@ EOF
 main () {
   trap "trap - SIGTERM && finish && kill -- -$$" SIGINT SIGTERM
 
+  [[ $ZSH_VERSION -ge 5.2 ]] \
+    || {
+      prinf "zsh version must be higher than 5.2"
+      exit
+    }
+
   local -Ua \
     FLAGS \
     missing_dependencies
