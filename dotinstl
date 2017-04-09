@@ -43,17 +43,28 @@ main () {
     FLAGS \
     missing_dependencies
 
-  # archlinux dependencies TODO add other distros TODO
+  # distro dependencies for arch and ubuntu
   local -Ar YAOURT_DEPENDENCIES=( \
-      zsh "antibody lsof trash-cli git" \
-      ghci "ghc haskell-stack haskell-hscolour haskell-pretty-show" \
-      tmux "tmux bind-tools git powerline-fonts-git" \
-      neovim "neovim python-neovim python \
-            ghc-mod rust-racer clang shellcheck \
-            eslint tidy go git" \
-      x11 "xmonad qutebrowser mpv xss-lock-git xautolock \
-      xbanish unclutter-xfixes-git slock xorg-xsetroot \
-      compton xmonad-contrib scrot xorg-xset git"
+    zsh     "antibody lsof trash-cli git" \
+    ghci    "ghc haskell-stack haskell-hscolour haskell-pretty-show" \
+    tmux    "tmux bind-tools git powerline-fonts-git" \
+    neovim  "neovim python-neovim python \
+              ghc-mod rust-racer clang shellcheck \
+              eslint tidy go git" \
+    x11     "xmonad qutebrowser mpv xss-lock-git xautolock \
+              xbanish unclutter-xfixes-git slock xorg-xsetroot \
+              compton xmonad-contrib scrot xorg-xset git"
+  )
+
+  local -Ar APT_DEPENDENCIES=( \
+    zsh     "lsof trash-cli git" \
+    ghci    "ghc haskell-stack libghc-hscolour-dev libghc-pretty-show-dev" \
+    tmux    "tmux dnsutils git" \
+    neovim  "neovim python3 python3-pip ghc-mod clang shellcheck \
+              tidy golang git" \
+    x11     "xmonad mpv xss-lock xautolock suckless-tools \
+              compton libghc-xmonad-contrib-dev scrot \
+              x11-xserver-utils git"
   )
 
   options $@

@@ -20,6 +20,10 @@ dependencies::check () {
     local -r \
       search_pkg_db="pacman -Q" \
       dependencies=YAOURT_DEPENDENCIES
+  elif exists apt-get; then
+    local -r\
+      search_pkg_db="dpkg -l" \
+      dependencies=APT_DEPENDENCIES
   else
     print -u2 "your *nix is not supported"
     exit 1
@@ -70,8 +74,12 @@ dependencies::install () {
         }
       yaourt -S ${missing_dependencies} --noconfirm --needed \
         && missing_dependencies=()
+    elif exists apt-get; then
+      dependencies::install::ubuntu
+      sudo apt-get install -y ${missing_dependencies} \
+        && missing_dependencies=()
     else
-      print -u2 "installing dependecies only works on Arch Linux... skipping"
+      print -u2 "installing dependecies is not support on your *nix"
     fi
   fi
 }
@@ -103,4 +111,31 @@ dependencies::install::yaourt () {
   rm -rf /tmp/package-query
 
   return ${value}
+}
+
+dependencies::install::ubuntu () {
+  (( ${FLAGS[(I)zsh]} )) || (( ${FLAGS[(I)ALL]} )) \
+    && {
+      exists antibody \
+        || curl -sL https://git.io/antibody | bash -s
+    }
+  (( ${FLAGS[(I)x11]} )) || (( ${FLAGS[(I)ALL]} )) \
+    && {
+      exists qutebrowser \
+        || {
+          sudo apt-get install -y python3-lxml python-tox python3-pyqt5 \
+          python3-pyqt5.qtwebkit python3-pyqt5.qtquick python3-sip \
+          python3-jinja2 python3-pygments python3-yaml
+
+          # download latest qutebrowser release
+          curl -s -L https://github.com/qutebrowser/qutebrowser/releases/latest \
+            | egrep -o 'qutebrowser/qutebrowser/releases/download/.*/.*\.deb' \
+            | wget --base=http://github.com/ -i - -O /tmp/qutebrowser.deb
+          wget https://qutebrowser.org/python3-pypeg2_2.15.2-1_all.deb \
+            -O /tmp/python3-pypeg.deb
+
+          sudo apt-get install -y /tmp/python3-pypeg.deb
+          sudo apt-get install -y /tmp/qutebrowser.deb
+        }
+    }
 }
