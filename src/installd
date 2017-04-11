@@ -129,6 +129,8 @@ installd::tmux () {
       || existing_dotfiles+=1
     ln -s ${DOTDIR}/ipaddr        ${HOME}/.bin/ipaddr \
       || existing_dotfiles+=1
+    ln -s ${DOTDIR}/batent        ${HOME}/.bin/batent \
+      || existing_dotfiles+=1
 
     [[ $existing_dotfiles == 0 ]] \
       || {
@@ -158,6 +160,7 @@ installd::tmux () {
     rm -f    ${HOME}/.tmux.conf
     rm -f    ${HOME}/.tmuxline.conf
     rm -f    ${HOME}/.bin/ipaddr
+    rm -f    ${HOME}/.bin/batent
     rm -rf   ${HOME}/.tmux
   fi
 }

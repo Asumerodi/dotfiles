@@ -1,0 +1,9 @@
+#!/usr/bin/zsh
+
+if { acpi | grep -E '[0-9][0-9][0-9]?\%' } &> /dev/null; then
+  acpi | cut -d',' -f2
+else
+  printf " $(</proc/sys/kernel/random/entropy_avail)"
+fi
+
+
