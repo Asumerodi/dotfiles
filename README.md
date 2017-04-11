@@ -1,9 +1,13 @@
-# dotfiles
 ### About
 My preferred configuration for `Zsh`, `Tmux`, `Neovim`, `GHCi` and `Xmonad`.
+
+![Screen Shot](./assets/f14c9352197ee26c7855848611b2ea76.png)
+
+#
 ### Usage
-> usage: **dotinstl [-aztnxi]** <br />
-> &#9; &nbsp; &nbsp; &nbsp;  &nbsp;**dotinstl [-aztnxu]**
+
+> &nbsp; **dotinstl [-aztnxi]** <br />
+> &nbsp; **dotinstl [-aztnxu]**
 > > **-a** &nbsp; &nbsp; *Install all dotfiles* <br />
 **-i** &nbsp; &nbsp; *Install package dependencies for chosen dotfiles* <br />
 **-u** &nbsp; &nbsp; *Uninstall chosen dotfiles* <br />
