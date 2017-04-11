@@ -1,5 +1,6 @@
 ### About
 My preferred configuration for `Zsh`, `Tmux`, `Neovim`, `GHCi` and `Xmonad`.
+******
 
 ![Screen Shot](./assets/f14c9352197ee26c7855848611b2ea76.png)
 
