@@ -17,7 +17,8 @@
       export BROWSER
     }
 
-  if [[ -z $DISPLAY ]] && [[ -n $XDG_VTNR ]] && [[ $XDG_VTNR -gt 2 ]]; then
+  # temporary fix for retroarch kms context
+  if [[ -z $DISPLAY ]] && [[ -n $XDG_VTNR ]] && [[ $XDG_VTNR -gt 1 ]]; then
     EGL_PLATFORM=0x31D7
     export EGL_PLATFORM
   fi
