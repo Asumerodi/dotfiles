@@ -53,7 +53,7 @@ main () {
 
   # distro dependencies for arch and ubuntu
   local -Ar YAOURT_DEPENDENCIES=( \
-    zsh     "antibody lsof trash-cli git" \
+    zsh     "antibody fzf lsof trash-cli git" \
     ghci    "ghc haskell-stack haskell-hscolour haskell-pretty-show" \
     tmux    "tmux bind-tools git powerline-fonts-git" \
     neovim  "neovim python-neovim python \

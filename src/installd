@@ -77,7 +77,7 @@ installd::zsh () {
             }
         done
 
-      # initialize submodule for dircolors-solarized
+        # initialize submodule for dircolors-solarized
         cd ${HOME}/.cache/antibody/*joel*/ \
           && git submodule init &> /dev/null \
           && git submodule update &> /dev/null \
@@ -91,6 +91,13 @@ installd::zsh () {
       # create dircolors file
         zsh -ic "setupsolarized dircolors.ansi-dark"
       }
+
+    # install fzf
+    [[ -a $HOME/.fzf.zsh ]] \
+      || {
+        git clone https://github.com/junegunn/fz $HOME/.fzf \
+          && $HOME/.fzf/install -all
+      } &> /dev/null
 
     kill %%
     printf "  zsh    done${GREEN} ✓  ${COLOR_OFF}\n"
