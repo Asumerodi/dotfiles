@@ -54,6 +54,9 @@ call dein#add('easymotion/vim-easymotion')
 call dein#add('moll/vim-bbye')
 call dein#add('Chiel92/vim-autoformat')
 call dein#add('ntpeters/vim-better-whitespace')
+" call dein#add('xolox/vim-misc')
+" call dein#add('xolox/vim-easytags')
+call dein#add('majutsushi/tagbar')
 
 " --- Git plugins ---
 call dein#add('tmux-plugins/vim-tmux-focus-events')

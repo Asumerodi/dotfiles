@@ -54,22 +54,10 @@ au BufNewFile,BufRead *.ejs set filetype=html
 " turn off filetype detection before sourcing plugins
 filetype off
 
-" source plugins and their specific configurations
-source $HOME/.vim/plugins/dein.vim
-source $HOME/.vim/plugins/solarized.vim
-source $HOME/.vim/plugins/airline.vim
-source $HOME/.vim/plugins/costco.vim
-source $HOME/.vim/plugins/deoplete.vim
-source $HOME/.vim/plugins/jsx.vim
-source $HOME/.vim/plugins/whitespace.vim
-source $HOME/.vim/plugins/syntastic.vim
-source $HOME/.vim/plugins/haskell.vim
-source $HOME/.vim/plugins/autoformat.vim
-source $HOME/.vim/plugins/gitgutter.vim
-source $HOME/.vim/plugins/tmuxnav.vim
-source $HOME/.vim/plugins/delimit.vim
-source $HOME/.vim/plugins/javascript.vim
-source $HOME/.vim/plugins/go.vim
+" source any plugin file enging in .vim
+for file in split(glob('~/.vim/plugins/*.vim'), '\n')
+  exe 'source' file
+endfor
 
 " Turn on filetype detection and syntax highlighting
 filetype plugin indent on
