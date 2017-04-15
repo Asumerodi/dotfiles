@@ -53,8 +53,16 @@ dependencies::check::package () {
       || ${=search_pkg_db} ${package}-git
   } &> /dev/null \
     || {
-      print -c -u2 "${package}" "is not installed"
-      missing_dependencies+=${package}
+      if [[ ${package} =~ 'antibody|hub' ]]; then
+        exists ${package} \
+          || {
+            print -c -u2 "${package}" "is not installed"
+            missing_dependencies+=${package}
+          }
+      else
+        print -c -u2 "${package}" "is not installed"
+        missing_dependencies+=${package}
+      fi
     }
 }
 
@@ -92,23 +100,24 @@ dependencies::install::yaourt () {
         || sudo pacman -S multilib-devel --needed --noconfirm \
         && git clone https://aur.archlinux.org/package-query.git \
           /tmp/package-query > /dev/null \
-        && cd /tmp/package-query \
-        && makepkg -si --noconfirm --needed \
-        && cd - \
+        && (
+          cd /tmp/package-query \
+            || exit 1 \
+            && makepkg -si --noconfirm --needed \
+        ) \
         && git clone https://aur.archlinux.org/yaourt.git \
           /tmp/yaourt > /dev/null \
-        && cd /tmp/yaourt \
-        && makepkg -si --noconfirm --needed \
-        && cd -
+        && (
+          cd /tmp/yaourt \
+            || exit 1 \
+            && makepkg -si --noconfirm --needed \
+        )
     }
   then
     value=0
   else
     value=1
   fi
-
-  rm -rf /tmp/yaourt
-  rm -rf /tmp/package-query
 
   return ${value}
 }
@@ -124,13 +133,15 @@ dependencies::install::ubuntu () {
         && {
           # download latest hub release
           curl -s -L https://github.com/github/hub/releases/latest \
-            | egrep -o 'github/hub/releases/download/.*/*linux-amd64*' \
-            | wget --base=http://github.com/ -i - -O /tmp/hub.tgz
+            | egrep -o 'github/hub/releases/download/.*/hub-linux-amd64.*\.tgz' \
+            | wget --base=http://github.com/ -i - -O /tmp/hub.tgz \
 
-          tar xvfz /tmp/hub.tgz
-          mv hub $HOME/.bin
+          (
+            cd /tmp || exit 1
+            tar xvfz ./hub.tgz
+            sudo hub-linux-amd64*/install
+          )
 
-          rm -f /tmp/hub.tgz
         } \
         && missing_dependencies=(${(@)missing_dependencies:#hub})
     }
@@ -160,8 +171,6 @@ dependencies::install::ubuntu () {
           sudo apt-get install -y /tmp/python3-pypeg.deb
           sudo apt-get install -y /tmp/qutebrowser.deb
 
-          rm -f /tmp/pyth3-pypeg.deb
-          rm -f /tmp/qutebrowser.deb
         } \
         && missing_dependencies=(${(@)missing_dependencies:#qutebrowser})
     }

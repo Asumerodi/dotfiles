@@ -19,7 +19,9 @@ finish () {
   rm -f  /tmp/installer.sh
   rm -f /tmp/pyth3-pypeg.deb
   rm -f /tmp/qutebrowser.deb
+  rm -f /tmp/antibody.tar.gz
   rm -f /tmp/hub.tgz
+  rm -rf /tmp/hub-linux-amd64*/
 }
 
 usage () {
@@ -40,7 +42,8 @@ EOF
 }
 
 main () {
-  trap "trap - SIGTERM && finish && kill -- -$$" SIGINT SIGTERM
+  trap "trap - SIGTERM && finish &> /dev/null && kill -- -$$" \
+    SIGINT SIGTERM EXIT
 
   { [[ $ZSH_VERSION > 5.2 ]] || [[ $ZSH_VERSION == 5.2 ]] } \
     || {
