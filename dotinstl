@@ -53,7 +53,7 @@ main () {
 
   # distro dependencies for arch and ubuntu
   local -Ar YAOURT_DEPENDENCIES=( \
-    zsh     "antibody fzf tig lsof trash-cli git" \
+    zsh     "antibody fzf hub tig lsof trash-cli git" \
     ghci    "ghc haskell-stack haskell-hscolour haskell-pretty-show" \
     tmux    "tmux bind-tools acpi git powerline-fonts-git" \
     neovim  "neovim python-neovim python \
@@ -65,7 +65,7 @@ main () {
   )
 
   local -Ar APT_DEPENDENCIES=( \
-    zsh     "lsof trash-cli tig git" \
+    zsh     "lsof trash-cli tig hub git" \
     ghci    "ghc haskell-stack libghc-hscolour-dev libghc-pretty-show-dev" \
     tmux    "tmux acpi dnsutils git" \
     neovim  "neovim python3 python3-pip ghc-mod clang shellcheck \

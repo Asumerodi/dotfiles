@@ -52,6 +52,9 @@
   [[ -v TMUX ]] \
     && FZF_TMUX=1
 
+  # hub alias to git
+  eval "$(hub alias -s)"
+
   #load compinit
   autoload -Uz compinit
   typeset -i updated_at=$(date +'%j' -r ~/.zcompdump ||
