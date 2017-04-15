@@ -134,7 +134,7 @@ dependencies::install::ubuntu () {
           # download latest hub release
           curl -s -L https://github.com/github/hub/releases/latest \
             | egrep -o 'github/hub/releases/download/.*/hub-linux-amd64.*\.tgz' \
-            | wget --base=http://github.com/ -i - -O /tmp/hub.tgz \
+            | wget --base=http://github.com/ -i - -O /tmp/hub.tgz
 
           (
             cd /tmp || exit 1

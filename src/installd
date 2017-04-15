@@ -78,15 +78,17 @@ installd::zsh () {
         done
 
         # initialize submodule for dircolors-solarized
-        cd ${HOME}/.cache/antibody/*joel*/ \
-          && git submodule init &> /dev/null \
-          && git submodule update &> /dev/null \
-          || {
-            kill %%
-            print -u2 "${RED}zsh dircolors failed to install${COLOR_OFF}"
-            return 1
-          }
-        cd -
+        (
+          cd ${HOME}/.cache/antibody/*joel*/ \
+            || exit 1 \
+            && git submodule init &> /dev/null \
+            && git submodule update &> /dev/null \
+            || {
+              kill %%
+              print -u2 "${RED}zsh dircolors failed to install${COLOR_OFF}"
+              return 1
+            }
+        )
 
       # create dircolors file
         zsh -ic "setupsolarized dircolors.ansi-dark"
@@ -236,7 +238,6 @@ installd::neovim () {
       || {
         curl ${diu} > /tmp/installer.sh
         sh /tmp/installer.sh ${HOME}/.config/nvim/dein
-        rm -f /tmp/installer.sh
       } &> /dev/null \
         || {
           kill %%
@@ -294,17 +295,20 @@ installd::x11 () {
       }
 
       # make and install dzvol
-      [[ -a ${HOME}/.bin/dzvol ]] \
+      exists dzvol \
         || {
           git clone https://github.com/allevaton/dzvol /tmp/dzvol
-          cd /tmp/dzvol
+          (
+            cd /tmp/dzvol \
+              || exit 1
+
             make
             mv dzvol ${HOME}/.bin/dzvol
-          cd -
-          rm -rf /tmp/dzvol
+          )
         } &> /dev/null \
           || {
             kill %%
+
             print -u2 "${RED}dzvol failed to install${COLOR_OFF}"
             return 1
           }
