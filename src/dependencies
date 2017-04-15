@@ -9,7 +9,7 @@ dependencies () {
       || (( ${FLAGS[(I)UNINSTALL]} ))
   } \
     || {
-      print -u2 "depenencies are not satisfied.\ntry installing with -i"
+      dot_err "depenencies are not satisfied.\ntry installing with -i"
       exit 1
     }
 }
@@ -25,7 +25,7 @@ dependencies::check () {
       search_pkg_db="dpkg -l" \
       dependencies=APT_DEPENDENCIES
   else
-    print -u2 "your *nix is not supported"
+    dot_err "your *nix is not supported"
     exit 1
   fi
 
@@ -77,7 +77,7 @@ dependencies::install () {
       print "yaourt not detected; building it..."
       dependencies::install::yaourt \
         || {
-            print -u2 "yaourt failed to install; dependencies not installed"
+            dot_err "yaourt failed to install; dependencies not installed"
             return 1
         }
       yaourt -S ${missing_dependencies} --noconfirm --needed \
@@ -87,7 +87,7 @@ dependencies::install () {
       sudo apt-get install -y ${missing_dependencies} \
         && missing_dependencies=()
     else
-      print -u2 "installing dependecies is not support on your *nix"
+      dot_err "installing dependecies is not support on your *nix"
     fi
   fi
 }
