@@ -116,14 +116,29 @@ dependencies::install::yaourt () {
 dependencies::install::ubuntu () {
   (( ${FLAGS[(I)zsh]} )) || (( ${FLAGS[(I)ALL]} )) \
     && {
-      exists antibody \
-        || curl -sL https://git.io/antibody | bash -s
+      (( ${missing_dependencies[(I)antibody]} )) \
+        && curl -sL https://git.io/antibody | bash -s \
+        && missing_dependencies=(${(@)missing_dependencies:#antibody})
+
+      (( ${missing_dependencies[(I)hub]} )) \
+        && {
+          # download latest hub release
+          curl -s -L https://github.com/github/hub/releases/latest \
+            | egrep -o 'github/hub/releases/download/.*/*linux-amd64*' \
+            | wget --base=http://github.com/ -i - -O /tmp/hub.tgz
+
+          tar xvfz /tmp/hub.tgz
+          mv hub $HOME/.bin
+
+          rm -f /tmp/hub.tgz
+        } \
+        && missing_dependencies=(${(@)missing_dependencies:#hub})
     }
 
   (( ${FLAGS[(I)neovim]} )) || (( ${FLAGS[(I)ALL]} )) \
     && {
-      exists neovim \
-        || {
+      (( ${missing_dependencies[(I)neovim]} )) \
+        && {
           sudo add-apt-repository -y ppa:neovim-ppa/unstable
           sudo apt-get -y update
           sudo apt-get install -y neovim python3-pip
@@ -133,8 +148,8 @@ dependencies::install::ubuntu () {
 
   (( ${FLAGS[(I)x11]} )) || (( ${FLAGS[(I)ALL]} )) \
     && {
-      exists qutebrowser \
-        || {
+      (( ${missing_dependencies[(I)qutebrowser]} )) \
+        && {
           # download latest qutebrowser release
           curl -s -L https://github.com/qutebrowser/qutebrowser/releases/latest \
             | egrep -o 'qutebrowser/qutebrowser/releases/download/.*/.*\.deb' \
@@ -147,6 +162,7 @@ dependencies::install::ubuntu () {
 
           rm -f /tmp/pyth3-pypeg.deb
           rm -f /tmp/qutebrowser.deb
-        }
+        } \
+        && missing_dependencies=(${(@)missing_dependencies:#qutebrowser})
     }
 }

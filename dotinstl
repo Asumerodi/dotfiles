@@ -19,6 +19,7 @@ finish () {
   rm -f  /tmp/installer.sh
   rm -f /tmp/pyth3-pypeg.deb
   rm -f /tmp/qutebrowser.deb
+  rm -f /tmp/hub.tgz
 }
 
 usage () {
@@ -65,14 +66,14 @@ main () {
   )
 
   local -Ar APT_DEPENDENCIES=( \
-    zsh     "lsof trash-cli tig hub git" \
+    zsh     "antibody lsof trash-cli hub tig git" \
     ghci    "ghc haskell-stack libghc-hscolour-dev libghc-pretty-show-dev" \
     tmux    "tmux acpi dnsutils git" \
     neovim  "neovim python3 python3-pip ghc-mod clang shellcheck \
               tidy golang git" \
     x11     "xmonad mpv xss-lock xautolock suckless-tools \
               compton libghc-xmonad-contrib-dev scrot \
-              x11-xserver-utils git"
+              x11-xserver-utils qutebrowser git"
   )
 
   options $@
