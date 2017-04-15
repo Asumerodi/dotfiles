@@ -8,6 +8,14 @@ readonly \
 
 alias exists="> /dev/null type -p"
 
+dot_err () {
+  local -r \
+    RED='\033[0;31m' \
+    COLOR_OFF='\033[0m'
+
+  print -u2 "${RED}${@}${COLOR_OFF}"
+}
+
 . ${SRCDIR}/options
 . ${SRCDIR}/dependencies
 . ${SRCDIR}/installd

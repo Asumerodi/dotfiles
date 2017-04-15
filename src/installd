@@ -51,7 +51,7 @@ installd::zsh () {
     [[ $existing_dotfiles == 0 ]] \
       || {
         kill %%
-        print -u2 "${RED}zsh dotfiles failed to install${COLOR_OFF}"
+        dot_err "zsh dotfiles failed to install"
         return 1
       }
 
@@ -71,8 +71,8 @@ installd::zsh () {
           [[ ${stat} == 0 ]] \
             || {
               kill %%
-              print -u2 "${RED}zsh dotfiles failed to install:${COLOR_OFF}"
-              print -u2 "plugins failed to download; check your connection"
+              dot_err "zsh dotfiles failed to install:"
+              dot_err "plugins failed to download; check your connection"
               return 1
             }
         done
@@ -85,7 +85,7 @@ installd::zsh () {
             && git submodule update &> /dev/null \
             || {
               kill %%
-              print -u2 "${RED}zsh dircolors failed to install${COLOR_OFF}"
+              dot_err "zsh dircolors failed to install"
               return 1
             }
         )
@@ -137,7 +137,7 @@ installd::tmux () {
     [[ $existing_dotfiles == 0 ]] \
       || {
         kill %%
-        print -u2 "${RED}tmux dotfiles failed to install${COLOR_OFF}"
+        dot_err "tmux dotfiles failed to install"
         return 1
       }
 
@@ -150,7 +150,7 @@ installd::tmux () {
       } &> /dev/null \
         || {
           kill %%
-          print -u2 "${RED}tmux plugins failed to download"
+          dot_err "tmux plugins failed to download"
           return 1
         }
 
@@ -185,7 +185,7 @@ installd::ghci () {
     [[ $existing_dotfiles == 0 ]] \
       || {
         kill %%
-        print -u2 "${RED}ghci dotfiles failed to install${COLOR_OFF}"
+        dot_err "ghci dotfiles failed to install"
         return 1
       }
 
@@ -229,7 +229,7 @@ installd::neovim () {
     [[ $existing_dotfiles == 0 ]] \
       || {
         kill %%
-        print -u2 "${RED}neovim dotfiles failed to install${COLOR_OFF}"
+        dot_err "neovim dotfiles failed to install"
         return 1
       }
 
@@ -241,7 +241,7 @@ installd::neovim () {
       } &> /dev/null \
         || {
           kill %%
-          print -u2 "${RED}dein failed to install${COLOR_OFF}"
+          dot_err "dein failed to install"
           return 1
         }
 
@@ -249,7 +249,7 @@ installd::neovim () {
       nvim --headless +qall 2> /dev/null \
         || {
           kill %%
-          print -u2 "${RED}dein plugins failed to download${COLOR_OFF}"
+          dot_err "dein plugins failed to download"
           return 1
         }
 
@@ -290,7 +290,7 @@ installd::x11 () {
     [[ $existing_dotfiles == 0 ]] \
       || {
         kill %%
-        print -u2 "${RED}x11 dotfiles failed to install${COLOR_OFF}"
+        dot_err "x11 dotfiles failed to install"
         return 1
       }
 
@@ -309,7 +309,7 @@ installd::x11 () {
           || {
             kill %%
 
-            print -u2 "${RED}dzvol failed to install${COLOR_OFF}"
+            dot_err "dzvol failed to install"
             return 1
           }
 
