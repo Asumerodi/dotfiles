@@ -105,7 +105,7 @@ installd::zsh () {
     printf "  zsh    done${GREEN} ✓  ${COLOR_OFF}\n"
   else
     # uninstall when UNINSTALL is passed
-    print "${RED}uninstalled${COLOR_OFF} zsh    dotfiles"
+    printf "  zsh    done${RED} ✘  ${COLOR_OFF}\n"
     rm -f    ${HOME}/.zshrc
     rm -f    ${HOME}/.zprofile
     rm -f    ${HOME}/.zsh
@@ -158,7 +158,7 @@ installd::tmux () {
     printf "  tmux   done${GREEN} ✓  ${COLOR_OFF}\n"
   else
     # uninstall when UNINSTALL is passed
-    print "${RED}uninstalled${COLOR_OFF} tmux   dotfiles"
+    printf "  tmux   done${RED} ✘  ${COLOR_OFF}\n"
     rm -f    ${HOME}/.tmux.conf
     rm -f    ${HOME}/.tmuxline.conf
     rm -f    ${HOME}/.bin/ipaddr
@@ -198,7 +198,7 @@ installd::ghci () {
     printf "  ghci   done${GREEN} ✓  ${COLOR_OFF}\n"
   else
     # uninstall when UNINSTALL is passed
-    print "${RED}uninstalled${COLOR_OFF} ghci   dotfiles"
+    printf "  ghci   done${RED} ✘  ${COLOR_OFF}\n"
     rm -f    ${HOME}/.ghc/ghci.extra.hs
     rm -f    ${HOME}/.ghc/ghci
   fi
@@ -257,7 +257,7 @@ installd::neovim () {
     printf "  neovim done${GREEN} ✓  ${COLOR_OFF}\n"
   else
     # uninstall when UNINSTALL is passed
-    print "${RED}uninstalled${COLOR_OFF} neovim dotfiles"
+    printf "  neovim done${RED} ✘  ${COLOR_OFF}\n"
     rm -f    ${HOME}/.vimrc
     rm -f    ${HOME}/.vim
     rm -rf   ${HOME}/.config/nvim
@@ -308,19 +308,32 @@ installd::x11 () {
         } &> /dev/null \
           || {
             kill %%
-
             dot_err "dzvol failed to install"
             return 1
+        }
+
+        # imgur upload script
+        exists imgur.sh \
+          || {
+            git clone https://github.com/tremby/imgur.sh /tmp/imgur
+            mv /tmp/imgur/imgur.sh $HOME/.bin
+          } &> /dev/null \
+            || {
+              kill %%
+              dot_err "imgur.sh failed to install"
+              return 1
           }
+
 
     kill %%
     printf "  x11    done${GREEN} ✓  ${COLOR_OFF}\n"
   else
     # uninstall when UNINSTALL is passed
-    print "${RED}uninstalled${COLOR_OFF} x11    dotfiles"
+    printf "  x11    done${RED} ✘  ${COLOR_OFF}\n"
     rm -f    ${HOME}/.bin/dzvol
     rm -f    ${HOME}/.bin/stoggle
     rm -f    ${HOME}/.xinitrc
+    rm -f    ${HOME}/.bin/imgur.sh
     rm -rf   ${HOME}/.config/mpv
     rm -rf   ${HOME}/.xmonad
   fi
