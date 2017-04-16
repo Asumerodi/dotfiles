@@ -80,7 +80,7 @@ installd::zsh () {
         # initialize submodule for dircolors-solarized
         (
           cd ${HOME}/.cache/antibody/*joel*/ \
-            || exit 1 \
+            || return 1 \
             && git submodule init &> /dev/null \
             && git submodule update &> /dev/null \
             || {
@@ -300,7 +300,7 @@ installd::x11 () {
           git clone https://github.com/allevaton/dzvol /tmp/dzvol
           (
             cd /tmp/dzvol \
-              || exit 1
+              || return 1
 
             make
             mv dzvol ${HOME}/.bin/dzvol

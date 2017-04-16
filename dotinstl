@@ -21,15 +21,23 @@ dot_err () {
 . ${SRCDIR}/installd
 
 finish () {
-  rm -rf /tmp/package-query
-  rm -rf /tmp/yaourt
-  rm -rf /tmp/dzvol
-  rm -f  /tmp/installer.sh
-  rm -f /tmp/pyth3-pypeg.deb
-  rm -f /tmp/qutebrowser.deb
-  rm -f /tmp/antibody.tar.gz
-  rm -f /tmp/hub.tgz
-  rm -rf /tmp/hub-linux-amd64*/
+  {
+    rm -rf /tmp/package-query
+    rm -rf /tmp/yaourt
+    rm -rf /tmp/dzvol
+    rm -rf /tmp/hub-linux-amd64*/
+    rm -rf /tmp/imgur
+    rm -f  /tmp/installer.sh
+    rm -f /tmp/pyth3-pypeg.deb
+    rm -f /tmp/qutebrowser.deb
+    rm -f /tmp/antibody.tar.gz
+    rm -f /tmp/hub.tgz
+  } &> /dev/null
+}
+
+finish::failed () {
+  finish
+  exit 1
 }
 
 usage () {
@@ -50,8 +58,8 @@ EOF
 }
 
 main () {
-  trap "trap - SIGTERM && finish &> /dev/null && kill -- -$$" \
-    SIGINT SIGTERM EXIT
+  trap "trap - SIGTERM && finish && kill -- -$$" \
+    SIGINT SIGTERM
 
   { [[ $ZSH_VERSION > 5.2 ]] || [[ $ZSH_VERSION == 5.2 ]] } \
     || {
@@ -92,6 +100,8 @@ main () {
   dependencies
 
   installd
+
+  finish
 }
 
  main $@

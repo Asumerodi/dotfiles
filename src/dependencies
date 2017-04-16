@@ -1,5 +1,6 @@
 dependencies () {
-  dependencies::check
+  dependencies::check \
+    || finish::failed
 
   (( ${FLAGS[(I)INSTALL]} )) &&
     dependencies::install
@@ -10,7 +11,7 @@ dependencies () {
   } \
     || {
       dot_err "depenencies are not satisfied.\ntry installing with -i"
-      exit 1
+      finish::failed
     }
 }
 
@@ -26,7 +27,7 @@ dependencies::check () {
       dependencies=APT_DEPENDENCIES
   else
     dot_err "your *nix is not supported"
-    exit 1
+    finish::failed
   fi
 
   if (( ${FLAGS[(I)ALL]} )); then
@@ -102,14 +103,14 @@ dependencies::install::yaourt () {
           /tmp/package-query > /dev/null \
         && (
           cd /tmp/package-query \
-            || exit 1 \
+            || return 1 \
             && makepkg -si --noconfirm --needed \
         ) \
         && git clone https://aur.archlinux.org/yaourt.git \
           /tmp/yaourt > /dev/null \
         && (
           cd /tmp/yaourt \
-            || exit 1 \
+            || return 1 \
             && makepkg -si --noconfirm --needed \
         )
     }
@@ -137,7 +138,7 @@ dependencies::install::ubuntu () {
             | wget --base=http://github.com/ -i - -O /tmp/hub.tgz
 
           (
-            cd /tmp || exit 1
+            cd /tmp || return 1
             tar xvfz ./hub.tgz
             sudo hub-linux-amd64*/install
           )

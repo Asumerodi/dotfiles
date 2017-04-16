@@ -1,7 +1,7 @@
 options () {
   if [[ -z $@ ]]; then
     usage
-    exit 1
+    finish::failed
   fi
 
   options::parse $@
@@ -20,7 +20,7 @@ options () {
       }
   then
     usage
-    exit 1
+    finish::failed
   fi
 }
 
@@ -41,7 +41,7 @@ options::parse () {
         ;;
       *)
         usage
-        exit 1
+        finish::failed
         ;;
     esac
   done
