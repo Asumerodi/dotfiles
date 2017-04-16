@@ -1,6 +1,7 @@
 import           Graphics.X11.ExtraTypes.XF86
 import           XMonad
 import           XMonad.Config.Desktop
+import           XMonad.Hooks.EwmhDesktops
 import           XMonad.Hooks.ICCCMFocus
 import           XMonad.Hooks.SetWMName
 import           XMonad.Layout.NoBorders
@@ -24,7 +25,7 @@ layoutToggle = do
   spawn "xset q | grep 'DPMS is' | dzen2 -p 2 -tw 250"
   sendMessage NextLayout
 
-main = xmonad $ desktopConfig
+main = xmonad $ ewmh $ desktopConfig
   { terminal   = "st"
   , modMask    = modm
   , layoutHook = myLayout
