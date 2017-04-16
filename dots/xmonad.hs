@@ -22,7 +22,7 @@ modm = mod4Mask
 
 layoutToggle = do
   spawn "stoggle"
-  spawn "xset q | grep 'DPMS is' | dzen2 -p 2 -tw 250"
+  spawn "sleep 0.1; xset q | grep 'DPMS is' | dzen2 -p 2 -tw 250"
   sendMessage NextLayout
 
 main = xmonad $ ewmh $ desktopConfig
