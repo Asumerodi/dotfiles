@@ -1,12 +1,44 @@
 #!/usr/bin/zsh
-xset -q |
-  grep 'DPMS is' |
-  awk '{print $3}' |
-  read state
+# variables for dzen2
+WIDTH=256
+WINDOW_HEIGHT=$( xdpyinfo \
+  | awk '$1 ~ /dimensions/ {split($2,arr,"x"); print int(arr[2])}' \
+)
+WINDOW_WIDTH=$( xdpyinfo \
+  | awk '$1 ~ /dimensions/ {split($2,arr,"x"); print int(arr[1])}' \
+)
+XPOS=$(( ( ${WINDOW_WIDTH} / 2 ) - ( ${WIDTH} / 2 ) ))
+YPOS=$((  ${WINDOW_HEIGHT} / 2 ))
 
-if [[ $state == Enabled ]]; then
-  xset -dpms
-  xautolock -disable; else
-  xset +dpms
-  xautolock -enable
-fi
+readonly WIDTH WINDOW_HEIGHT WINDOW_WIDTH XPOS YPOS
+
+# get current state of dpms
+xset -q \
+  | grep -Eo 'DPMS is (Enabled|Disabled)' \
+  | awk '{print $3}' \
+  | read dpms_state
+
+# function to call dzen2 with current state
+dzen2_dpms_state () {
+  local -r \
+    new_dpms_state=$1
+
+  print "Power Management ${new_dpms_state}" \
+    | dzen2 -p 2 -tw ${WIDTH} -x ${XPOS} -y ${YPOS}
+}
+
+  case $dpms_state in
+    Enabled)
+      xset -dpms
+      xautolock -disable
+      dzen2_dpms_state "Disabled"
+      ;;
+    Disabled)
+      xset +dpms
+      xautolock -enable
+      dzen2_dpms_state "Enabled"
+      ;;
+    *)
+      exit 1
+      ;;
+  esac

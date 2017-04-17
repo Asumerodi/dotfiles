@@ -4,26 +4,29 @@ import           XMonad.Config.Desktop
 import           XMonad.Hooks.EwmhDesktops
 import           XMonad.Hooks.ICCCMFocus
 import           XMonad.Hooks.SetWMName
+import           XMonad.Layout.MultiToggle
+import           XMonad.Layout.MultiToggle.Instances
 import           XMonad.Layout.NoBorders
-import           XMonad.Util.EZConfig         (additionalKeys)
+import           XMonad.Util.EZConfig                (additionalKeys)
 
 start = do
   spawn "$HOME/.xmonad/autostart"
   setWMName "LG3D"
 
-myLayout = smartBorders tiled ||| noBorders Full
-  where
-    tiled    = Tall nmaster delta ratio
-    nmaster  = 1
-    ratio    = 309/500
-    delta    = 9/500
+myLayout = smartBorders
+  $ mkToggle (NOBORDERS ?? FULL ?? EOT)
+  $ tiled ||| Mirror tiled
+    where
+      tiled    = Tall nmaster delta ratio
+      nmaster  = 1
+      ratio    = 309/500
+      delta    = 9/500
 
 modm = mod4Mask
 
-layoutToggle = do
+fullToggle = do
   spawn "stoggle"
-  spawn "sleep 0.1; xset q | grep 'DPMS is' | dzen2 -p 2 -tw 250"
-  sendMessage NextLayout
+  sendMessage $ Toggle FULL
 
 main = xmonad $ ewmh $ desktopConfig
   { terminal   = "st"
@@ -35,8 +38,8 @@ main = xmonad $ ewmh $ desktopConfig
   , logHook = takeTopFocus
   } `additionalKeys`
         -- toggle fullscreen, dpms and xautolock
-      [ ( ( modm              , xK_space                )
-        , layoutToggle                                                  )
+      [ ( ( modm              , xK_f                     )
+        , fullToggle                                        )
         -- lower volume
       , ( ( 0                 , xF86XK_AudioLowerVolume )
         , spawn "pactl set-sink-volume 0 -1%; dzvol"                    )
