@@ -5,6 +5,7 @@ readonly \
   SCRIPT_NAME="${0:t}" \
   SRCDIR="${0:A:h}/src"
   DOTDIR="${0:A:h}/dots"
+  DISTDIR="${0:A:h}/dist"
 
 alias exists="> /dev/null type -p"
 
@@ -27,6 +28,7 @@ finish () {
     rm -rf /tmp/dzvol
     rm -rf /tmp/hub-linux-amd64*/
     rm -rf /tmp/imgur
+    rm -rf /tmp/farbfeld-3
     rm -f  /tmp/installer.sh
     rm -f /tmp/pyth3-pypeg.deb
     rm -f /tmp/qutebrowser.deb
@@ -81,7 +83,7 @@ main () {
               eslint tidy go git" \
     x11     "xmonad qutebrowser mpv xss-lock-git xautolock \
               xbanish unclutter-xfixes-git slock xorg-xsetroot \
-              compton xmonad-contrib scrot xorg-xset git"
+              compton xmonad-contrib maim xorg-xset git"
   )
 
   local -Ar APT_DEPENDENCIES=( \
@@ -91,7 +93,7 @@ main () {
     neovim  "neovim python3 python3-pip ghc-mod clang shellcheck \
               tidy golang git" \
     x11     "xmonad mpv xss-lock xautolock suckless-tools \
-              compton libghc-xmonad-contrib-dev scrot \
+              compton libghc-xmonad-contrib-dev maim \
               x11-xserver-utils qutebrowser git"
   )
 

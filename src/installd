@@ -322,6 +322,15 @@ installd::x11 () {
               kill %%
               dot_err "imgur.sh failed to install"
               return 1
+            }
+        exists png2ff \
+          || {
+            (
+              cd /tmp
+              tar -xJf ${DISTDIR}/dist/farbfeld-3.tar.xz
+              cd farbfeld-3
+              sudo make install
+            )
           }
 
 
