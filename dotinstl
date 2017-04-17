@@ -83,7 +83,7 @@ main () {
               eslint tidy go git" \
     x11     "xmonad qutebrowser mpv xss-lock-git xautolock \
               xbanish unclutter-xfixes-git slock xorg-xsetroot \
-              compton xmonad-contrib maim xorg-xset git"
+              compton xmonad-contrib maim farbfeld xorg-xset git"
   )
 
   local -Ar APT_DEPENDENCIES=( \
