@@ -152,8 +152,8 @@ installd::zsh () {
 
     # install fzf
     if ! [[ -a ${HOME}/.fzf.zsh ]]; then
-      git clone https://github.com/junegunn/fzf ${HOME}/.fzf \
-        && ${HOME}/.fzf/install -all
+      git clone https://github.com/junegunn/fzf ${HOME}/.fzf
+      ${HOME}/.fzf/install --all
     fi &> /dev/null
 
     # change XDG_CONFIG_HOME if using a different value
