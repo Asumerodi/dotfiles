@@ -11,7 +11,7 @@ readonly \
   X11DIR="${SCRIPTDIR}/xmonad" \
   TMUXDIR="${SCRIPTDIR}/tmux" \
   DISTDIR="${SCRIPTDIR}/dist" \
-  BINDIR="${HOME}/.bin"
+  BINDIR="${HOME}/.local/bin"
 
 if [[ -v ${XDG_CONFIG_HOME} ]]; then
   CONFIGDIR="${XDG_CONFIG_HOME}"

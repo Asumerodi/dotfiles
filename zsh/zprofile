@@ -1,6 +1,6 @@
 {
   typeset -U path
-  path=($HOME/.bin $path)
+  path=($HOME/.local/bin $path)
   export PATH
 
   XDG_CONFIG_HOME="$HOME/.config"
