@@ -3,9 +3,23 @@ setopt extendedglob
 
 readonly \
   SCRIPT_NAME="${0:t}" \
-  SRCDIR="${0:A:h}/src"
-  DOTDIR="${0:A:h}/dots"
-  DISTDIR="${0:A:h}/dist"
+  SCRIPTDIR="${0:A:h}"
+  SRCDIR="${SCRIPTDIR}/src" \
+  ZSHDIR="${SCRIPTDIR}/zsh" \
+  GHCIDIR="${SCRIPTDIR}/ghci" \
+  NVIMDIR="${SCRIPTDIR}/neovim" \
+  X11DIR="${SCRIPTDIR}/xmonad" \
+  TMUXDIR="${SCRIPTDIR}/tmux" \
+  DISTDIR="${SCRIPTDIR}/dist" \
+  BINDIR="${HOME}/.bin"
+
+if [[ -v ${XDG_CONFIG_HOME} ]]; then
+  CONFIGDIR="${XDG_CONFIG_HOME}"
+else
+  CONFIGDIR="${HOME}/.config"
+fi
+
+readonly CONFIGDIR
 
 alias exists="> /dev/null type -p"
 
@@ -14,7 +28,7 @@ dot_err () {
     RED='\033[0;31m' \
     COLOR_OFF='\033[0m'
 
-  print -u2 "${RED}${@}${COLOR_OFF}"
+  print -u2 "${RED}ERROR:${COLOR_OFF}" "$@"
 }
 
 . ${SRCDIR}/options

@@ -3,6 +3,9 @@
   path=($HOME/.bin $path)
   export PATH
 
+  XDG_CONFIG_HOME="$HOME/.config"
+  export XDG_CONFIG_HOME
+
   type -p nvim &&
     {
       VISUAL=nvim

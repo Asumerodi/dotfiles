@@ -24,6 +24,73 @@ installd::spinner () {
   done
 }
 
+installd::symlink () {
+  local symlink files
+  files=$@
+
+  for file in ${=files}; do
+    # determine symlink location based on information in filepath
+    case ${file} in
+      */bin/*)
+        symlink=${BINDIR}/${file:t}
+        ;;
+      */ghci/*)
+        symlink=${HOME}/.ghc/${file:t}
+        ;;
+      */neovim/init.vim)
+        # install vimrc and vim dir symlinks for convenience
+        installd::symlink::link ${file} ${HOME}/.vimrc
+        installd::symlink::link ${CONFIGDIR}/nvim ${HOME}/.vim
+
+        # now set symlink as normal
+        symlink=${CONFIGDIR}/nvim/${file:t}
+        ;;
+      */neovim/plugins)
+        symlink=${CONFIGDIR}/nvim/${file:t}
+        ;;
+      */mpv.conf)
+        symlink=${CONFIGDIR}/mpv/${file:t}
+        ;;
+      */xmonad/(auto|xmon)*)
+        symlink=${HOME}/.xmonad/${file:t}
+        ;;
+      *)
+        symlink=${HOME}/.${file:t}
+        ;;
+    esac
+
+    installd::symlink::link ${file} ${symlink}
+  done
+}
+
+installd::symlink::link () {
+  local -r \
+    file=$1 \
+    symlink=$2
+
+  ln -sT ${file} ${symlink} &> /dev/null \
+    || if [[ ${file} != ${symlink:A} ]]; then
+      existing_dotfiles+=1
+      dot_err "${symlink} exists:"
+      dot_err "  and doesn't point to ${file}"
+    fi
+}
+
+installd::symlink::fail () {
+  local -r \
+    current=$1
+
+  if [[ ${existing_dotfiles} != 0 ]]; then
+    kill %%
+
+    printf "\n"
+    dot_err "${current} dotfiles failed to install:"
+    dot_err "  will not overwrite existing files"
+    printf "\n"
+    return 1
+  fi
+}
+
 installd::all () {
   installd::zsh
   installd::tmux
@@ -35,82 +102,80 @@ installd::all () {
 installd::zsh () {
   local -i existing_dotfiles
 
-  # create needed dir
   if ! (( ${FLAGS[(I)UNINSTALL]} )); then
-    mkdir -p ${HOME}/.bin
-
     installd::spinner "zsh   " &
 
-    ln -s  ${DOTDIR}/zshrc  ${HOME}/.zshrc \
-      || existing_dotfiles+=1
-    ln -s ${DOTDIR}/zprofile  ${HOME}/.zprofile \
-      || existing_dotfiles+=1
-    ln -sT ${DOTDIR}/zsh    ${HOME}/.zsh \
-      || existing_dotfiles+=1
+    installd::symlink ${ZSHDIR}/*
 
-    [[ $existing_dotfiles == 0 ]] \
-      || {
-        kill %%
-        dot_err "zsh dotfiles failed to install"
-        return 1
-      }
+    installd::symlink::fail "zsh" \
+      || return 1
 
     # create sourable plugins file
-    [[ -a ${HOME}/.zsh/plugins.zsh ]] \
-      || {
+    if ! [[ -a ${HOME}/.zsh/plugins.zsh ]]; then
+      antibody bundle < ${ZSHDIR}/zsh/plugins \
+        | sort \
+        | sed '/pure.plugin/ { H; d; }; $ { p; x; }' \
+        | sed '/zsh-syntax/ { H; d; }; $ { p; x; }' \
+        | sed '/zsh-history/ { H; d; }; $ { p; x; }' \
+        | sed '/zsh-vim-mode/ { H; d; }; $ { p; x; }' \
+        > ${ZSHDIR}/zsh/plugins.zsh
 
-        antibody bundle < ${DOTDIR}/zsh/plugins \
-          | sort \
-          | sed '/pure.plugin/ { H; d; }; $ { p; x; }' \
-          | sed '/zsh-syntax/ { H; d; }; $ { p; x; }' \
-          | sed '/zsh-history/ { H; d; }; $ { p; x; }' \
-          | sed '/zsh-vim-mode/ { H; d; }; $ { p; x; }' \
-          > ${DOTDIR}/zsh/plugins.zsh
+      printf "$(antibody init)\n$(<${ZSHDIR}/zsh/plugins.zsh)" \
+        > ${ZSHDIR}/zsh/plugins.zsh
 
-        for stat in ${pipestatus}; do
-          [[ ${stat} == 0 ]] \
-            || {
-              kill %%
-              dot_err "zsh dotfiles failed to install:"
-              dot_err "plugins failed to download; check your connection"
-              return 1
-            }
-        done
+      for stat in ${pipestatus}; do
+        if [[ ${stat} != 0 ]]; then
+          kill %%
+          dot_err "\nzsh dotfiles failed to install:"
+          dot_err "  plugins failed to download, check your connection"
+          return 1
+        fi
+      done
 
-        # initialize submodule for dircolors-solarized
-        (
-          cd ${HOME}/.cache/antibody/*joel*/ \
-            || return 1 \
-            && git submodule init &> /dev/null \
-            && git submodule update &> /dev/null \
-            || {
-              kill %%
-              dot_err "zsh dircolors failed to install"
-              return 1
-            }
-        )
+      # initialize submodule for dircolors-solarized
+      (
+        cd ${HOME}/.cache/antibody/*zsh-dircolors-solarized \
+          || return 1 \
+          && git submodule init \
+          && git submodule update \
+          || {
+            kill %%
+            dot_err "zsh dotfiles failed to install:"
+            dot_err "  zsh dircolors failed to install"
+            return 1
+          }
+      )
 
-      # create dircolors file
-        zsh -ic "setupsolarized dircolors.ansi-dark"
-      }
+    # create dircolors file
+      zsh -ic "setupsolarized dircolors.ansi-dark"
+    fi &> /dev/null
 
     # install fzf
-    [[ -a $HOME/.fzf.zsh ]] \
-      || {
-        git clone https://github.com/junegunn/fz $HOME/.fzf \
-          && $HOME/.fzf/install -all
-      } &> /dev/null
+    if ! [[ -a ${HOME}/.fzf.zsh ]]; then
+      git clone https://github.com/junegunn/fzf ${HOME}/.fzf \
+        && ${HOME}/.fzf/install -all
+    fi &> /dev/null
+
+    # change XDG_CONFIG_HOME if using a different value
+    if [[ ${CONFIGDIR} != ${HOME}/.config ]]; then
+      sed \
+        -i "s/XDG_CONFIG_HOME=*/XDG_CONFIG_HOME=${CONFIGDIR}" \
+        ${ZSHDIR}/zprofile
+    fi
 
     kill %%
     printf "  zsh    done${GREEN} ✓  ${COLOR_OFF}\n"
   else
-    # uninstall when UNINSTALL is passed
+    # unistall flag
     printf "  zsh    done${RED} ✘  ${COLOR_OFF}\n"
     rm -f    ${HOME}/.zshrc
     rm -f    ${HOME}/.zprofile
     rm -f    ${HOME}/.zsh
     rm -f    ${HOME}/.zsh-dircolors.config
-    rm -f    ${DOTDIR}/zsh/plugins.zsh
+    rm -f    ${HOME}/.fzf.zsh
+    rm -f    ${HOME}/.fzf.bash
+    rm -f    ${ZSHDIR}/zsh/plugins.zsh
+    rm -rf   ${HOME}/.fzf
     rm -rf   ${HOME}/.cache/antibody
   fi
 }
@@ -121,38 +186,25 @@ installd::tmux () {
   if ! (( ${FLAGS[(I)UNINSTALL]} )); then
 
     # create needed dir
-    mkdir -p ${HOME}/.bin
+    mkdir -p ${BINDIR}
     installd::spinner "tmux  " &
 
-    # create symbolic links only if files don't exist
-    ln -s ${DOTDIR}/tmux.conf     ${HOME}/.tmux.conf \
-      || existing_dotfiles+=1
-    ln -s ${DOTDIR}/tmuxline.conf ${HOME}/.tmuxline.conf \
-      || existing_dotfiles+=1
-    ln -s ${DOTDIR}/ipaddr        ${HOME}/.bin/ipaddr \
-      || existing_dotfiles+=1
-    ln -s ${DOTDIR}/batent        ${HOME}/.bin/batent \
-      || existing_dotfiles+=1
+    installd::symlink ${TMUXDIR}/^bin ${TMUXDIR}/bin/*
 
-    [[ $existing_dotfiles == 0 ]] \
-      || {
-        kill %%
-        dot_err "tmux dotfiles failed to install"
-        return 1
-      }
+    installd::symlink::fail "tmux" \
+      || return 1
 
     # install tmux plugin manager and run script to install plugins
-    [[ -a ${HOME}/.tmux/plugins/tpm ]] \
-      || {
-        git clone https://github.com/tmux-plugins/tpm \
-          ${HOME}/.tmux/plugins/tpm \
-          && ${HOME}/.tmux/plugins/tpm/bin/install_plugins
-      } &> /dev/null \
+    if ! [[ -a ${HOME}/.tmux/plugins/tpm ]];then
+      git clone https://github.com/tmux-plugins/tpm \
+        ${HOME}/.tmux/plugins/tpm \
+        && ${HOME}/.tmux/plugins/tpm/bin/install_plugins \
         || {
           kill %%
           dot_err "tmux plugins failed to download"
           return 1
         }
+    fi &> /dev/null
 
     kill %%
     printf "  tmux   done${GREEN} ✓  ${COLOR_OFF}\n"
@@ -161,8 +213,8 @@ installd::tmux () {
     printf "  tmux   done${RED} ✘  ${COLOR_OFF}\n"
     rm -f    ${HOME}/.tmux.conf
     rm -f    ${HOME}/.tmuxline.conf
-    rm -f    ${HOME}/.bin/ipaddr
-    rm -f    ${HOME}/.bin/batent
+    rm -f    ${BINDIR}/ipaddr
+    rm -f    ${BINDIR}/batent
     rm -rf   ${HOME}/.tmux
   fi
 }
@@ -171,33 +223,25 @@ installd::ghci () {
   local -i existing_dotfiles
 
   if ! (( ${FLAGS[(I)UNINSTALL]} )); then
-      # create needed dirs
-      mkdir -p ${HOME}/.ghc
+    # create needed dirs
+    mkdir -p ${HOME}/.ghc
 
-      installd::spinner "ghci  " &
+    installd::spinner "ghci  " &
 
-      # create symbolic links
-      ln -s ${DOTDIR}/ghci   ${HOME}/.ghc/ghci.conf \
-        || existing_dotfiles+=1
-      ln -s ${DOTDIR}/ghci.extra.hs  ${HOME}/.ghc/ghci.extra.hs \
-        || existing_dotfiles+=1
+    installd::symlink ${GHCIDIR}/*
 
-    [[ $existing_dotfiles == 0 ]] \
-      || {
-        kill %%
-        dot_err "ghci dotfiles failed to install"
-        return 1
-      }
+    installd::symlink::fail "ghci" \
+      || return 1
 
-      {
-        stack setup
-        stack ghc --package pretty-show --package hscolour
-      } &> /dev/null
+    {
+      stack setup
+      stack ghc --package pretty-show --package hscolour
+    } &> /dev/null
 
     kill %%
     printf "  ghci   done${GREEN} ✓  ${COLOR_OFF}\n"
   else
-    # uninstall when UNINSTALL is passed
+    # uninstall
     printf "  ghci   done${RED} ✘  ${COLOR_OFF}\n"
     rm -f    ${HOME}/.ghc/ghci.extra.hs
     rm -f    ${HOME}/.ghc/ghci
@@ -205,39 +249,29 @@ installd::ghci () {
 }
 
 installd::neovim () {
-  local -r \
-   diu=https://raw.githubusercontent.com/Shougo/dein.vim/master/bin/installer.sh
+  local dein
+  dein=https://raw.githubusercontent.com/Shougo/dein.vim/master/bin/installer.sh
+  readonly dein
+
   local -i existing_dotfiles
 
   if ! (( ${FLAGS[(I)UNINSTALL]} )); then
     # create needed dirs
-    mkdir -p ${HOME}/.config/nvim
-    mkdir -p ${HOME}/.bin
+    mkdir -p ${CONFIGDIR}/nvim
+    mkdir -p ${BINDIR}
 
     installd::spinner "neovim" &
 
-    # create symbolic links
-      ln -s  ${DOTDIR}/init.vim    ${HOME}/.config/nvim/init.vim \
-        || existing_dotfiles+=1
-      ln -s  ${DOTDIR}/init.vim    ${HOME}/.vimrc \
-        || existing_dotfiles+=1
-      ln -sT ${HOME}/.config/nvim      ${HOME}/.vim \
-        || existing_dotfiles+=1
-      ln -sT ${DOTDIR}/nvimplugins ${HOME}/.config/nvim/plugins \
-        || existing_dotfiles+=1
+    installd::symlink ${NVIMDIR}/*
 
-    [[ $existing_dotfiles == 0 ]] \
-      || {
-        kill %%
-        dot_err "neovim dotfiles failed to install"
-        return 1
-      }
+    installd::symlink::fail "neovim" \
+      || return 1
 
     # install dein plugin manager
-    [[ -a ${HOME}/.config/nvim/dein ]] \
+    [[ -a ${CONFIGDIR}/nvim/dein ]] \
       || {
-        curl ${diu} > /tmp/installer.sh
-        sh /tmp/installer.sh ${HOME}/.config/nvim/dein
+        curl ${dein} > /tmp/installer.sh
+        sh /tmp/installer.sh ${CONFIGDIR}/nvim/dein
       } &> /dev/null \
         || {
           kill %%
@@ -260,7 +294,7 @@ installd::neovim () {
     printf "  neovim done${RED} ✘  ${COLOR_OFF}\n"
     rm -f    ${HOME}/.vimrc
     rm -f    ${HOME}/.vim
-    rm -rf   ${HOME}/.config/nvim
+    rm -rf   ${CONFIGDIR}/nvim
   fi
 }
 
@@ -270,31 +304,16 @@ installd::x11 () {
   if ! (( ${FLAGS[(I)UNINSTALL]} )); then
       # create needed dirs
       mkdir -p ${HOME}/.xmonad
-      mkdir -p ${HOME}/.bin
-      mkdir -p ${HOME}/.config/mpv
+      mkdir -p ${BINDIR}
+      mkdir -p ${CONFIGDIR}/mpv
 
       installd::spinner "x11   " &
 
-      # create symbolic links
-      ln -s ${DOTDIR}/xinitrc   ${HOME}/.xinitrc \
-        || existing_dotfiles+=1
-      ln -s ${DOTDIR}/stoggle   ${HOME}/.bin/stoggle \
-        || existing_dotfiles+=1
-      ln -s ${DOTDIR}/mpv.conf  ${HOME}/.config/mpv/mpv.conf \
-        || existing_dotfiles+=1
-      ln -s ${DOTDIR}/xmonad.hs ${HOME}/.xmonad/xmonad.hs \
-        || existing_dotfiles+=1
-      ln -s ${DOTDIR}/autostart ${HOME}/.xmonad/autostart \
-        || existing_dotfiles+=1
+      installd::symlink ${X11DIR}/bin/* ${X11DIR}/^bin
 
-    [[ $existing_dotfiles == 0 ]] \
-      || {
-        kill %%
-        dot_err "x11 dotfiles failed to install"
-        return 1
-      }
+      installd::symlink::fail "x11" \
+        || return 1
 
-      # make and install dzvol
       exists dzvol \
         || {
           git clone https://github.com/allevaton/dzvol /tmp/dzvol
@@ -303,7 +322,7 @@ installd::x11 () {
               || return 1
 
             make
-            mv dzvol ${HOME}/.bin/dzvol
+            mv dzvol ${BINDIR}/dzvol
           )
         } &> /dev/null \
           || {
@@ -316,7 +335,7 @@ installd::x11 () {
         exists imgur.sh \
           || {
             git clone https://github.com/tremby/imgur.sh /tmp/imgur
-            mv /tmp/imgur/imgur.sh $HOME/.bin
+            mv /tmp/imgur/imgur.sh ${BINDIR}
           } &> /dev/null \
             || {
               kill %%
@@ -339,11 +358,12 @@ installd::x11 () {
   else
     # uninstall when UNINSTALL is passed
     printf "  x11    done${RED} ✘  ${COLOR_OFF}\n"
-    rm -f    ${HOME}/.bin/dzvol
-    rm -f    ${HOME}/.bin/stoggle
+    rm -f    ${BINDIR}/dzvol
+    rm -f    ${BINDIR}/stoggle
+    rm -f    ${BINDIR}/autostart
     rm -f    ${HOME}/.xinitrc
-    rm -f    ${HOME}/.bin/imgur.sh
-    rm -rf   ${HOME}/.config/mpv
+    rm -f    ${BINDIR}/imgur.sh
+    rm -rf   ${CONFIGDIR}/mpv
     rm -rf   ${HOME}/.xmonad
   fi
 }
