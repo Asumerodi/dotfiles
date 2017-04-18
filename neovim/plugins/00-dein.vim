@@ -8,6 +8,7 @@ call dein#add('Shougo/dein.vim')
 call dein#add('frankier/neovim-colors-solarized-truecolor-only')
 call dein#add('vim-airline/vim-airline')
 call dein#add('vim-airline/vim-airline-themes')
+call dein#add('rhysd/vim-grammarous')
 
  " --- Completion plugins ---
 call dein#add('Shougo/deoplete.nvim')
