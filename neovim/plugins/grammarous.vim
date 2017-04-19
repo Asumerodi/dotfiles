@@ -1,4 +1,4 @@
-let g:grammarous#use_vim_spelllang = 1
+" let g:grammarous#use_vim_spelllang = 1
 nnoremap <F4> :GrammarousCheck<CR>
 
 autocmd BufEnter *.latex set spell spelllang=en_us
