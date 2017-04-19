@@ -20,6 +20,15 @@
       export BROWSER
     }
 
+  type -p fzf \
+    && FZF_ALT_C_COMMAND="find . -mindepth 1 -type d" \
+    && export FZF_ALT_C_COMMAND \
+    && type -p rg \
+    && rg_cmd="rg -uuu --files -g ''" \
+    && FZF_DEFAULT_COMMAND=${rg_cmd} \
+    && FZF_CTRL_T_COMMAND=${rg_cmd} \
+    && export FZF_DEFAULT_COMMAND FZF_CTRL_T_COMMAND
+
   # temporary fix for retroarch kms context
   if [[ -z $DISPLAY ]] && [[ -n $XDG_VTNR ]] && [[ $XDG_VTNR -gt 1 ]]; then
     EGL_PLATFORM=0x31D7
