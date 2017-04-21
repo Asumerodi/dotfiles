@@ -72,22 +72,14 @@ main () {
   trap "trap - SIGTERM && finish && kill -- -$$" \
     SIGINT SIGTERM
 
-  ZSHDIR="${SCRIPTDIR}/zsh"
-  GHCIDIR="${SCRIPTDIR}/ghci"
-  NVIMDIR="${SCRIPTDIR}/neovim"
-  X11DIR="${SCRIPTDIR}/xmonad"
-  TMUXDIR="${SCRIPTDIR}/tmux"
-  DISTDIR="${SCRIPTDIR}/dist"
-  BINDIR="${HOME}/.local/bin"
-
   local -r \
-    ZSHDIR \
-    GHCIDIR \
-    NVIMDIR \
-    X11DIR \
-    TMUXDIR \
-    DISTDIR \
-    BINDIR
+    ZSHDIR="${SCRIPTDIR}/zsh" \
+    GHCIDIR="${SCRIPTDIR}/ghci" \
+    NVIMDIR="${SCRIPTDIR}/neovim" \
+    X11DIR="${SCRIPTDIR}/xmonad" \
+    TMUXDIR="${SCRIPTDIR}/tmux" \
+    DISTDIR="${SCRIPTDIR}/dist" \
+    BINDIR="${HOME}/.local/bin"
 
 # respect users current $XDG_CONFIG_HOME if set
 if [[ -v ${XDG_CONFIG_HOME} ]]; then

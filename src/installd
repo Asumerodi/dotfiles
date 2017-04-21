@@ -161,7 +161,7 @@ installd::zsh () {
     # change XDG_CONFIG_HOME if using a different value
     if [[ ${CONFIGDIR} != ${HOME}/.config ]]; then
       sed \
-        -i "s/XDG_CONFIG_HOME=*/XDG_CONFIG_HOME=${CONFIGDIR}" \
+        -i "s/^XDG_CONFIG_HOME=*$/XDG_CONFIG_HOME=${CONFIGDIR}/" \
         ${ZSHDIR}/zprofile
     fi
 
