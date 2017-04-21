@@ -287,6 +287,7 @@ installd::x11 () {
   if [[ ${CMD} == "ln" ]]; then
       # create needed dirs
       mkdir -p ${HOME}/.xmonad
+      mkdir -p ${HOME}/shots
       mkdir -p ${BINDIR}
       mkdir -p ${CONFIGDIR}/mpv
 
