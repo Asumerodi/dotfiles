@@ -1,22 +1,3 @@
-installd () {
-  local -r \
-    RED='\033[0;31m' \
-    GREEN='\033[0;32m' \
-    COLOR_OFF='\033[0m'
-    BALL=(" ●    " "  ●   " "   ●  " "    ● " "     ●" \
-        "    ● " "   ●  " "  ●   " " ●    " "●     ")
-
-  if [[ ${all} == 1 ]]; then
-    installd::all
-  else
-    for flag in ${flags}; do
-      if [[ ${flag} != "install_deps" ]] && [[ ${(P)flag} == 1 ]]; then
-        installd::${flag}
-      fi
-    done
-  fi
-}
-
 installd::spinner () {
   while true; do
     for b in $BALL; do
@@ -367,5 +348,26 @@ installd::x11 () {
     rm -f    ${BINDIR}/imgur.sh
     rm -rf   ${CONFIGDIR}/mpv
     rm -rf   ${HOME}/.xmonad
+  fi
+}
+
+installd () {
+  local -r \
+    RED='\033[0;31m' \
+    GREEN='\033[0;32m' \
+    COLOR_OFF='\033[0m'
+    BALL=(" ●    " "  ●   " "   ●  " "    ● " "     ●" \
+        "    ● " "   ●  " "  ●   " " ●    " "●     ")
+
+  if [[ ${all} == 1 ]]; then
+    installd::symlink::link ${SCRIPTDIR}/doi ${BINDIR}/doi
+    installd::all
+  else
+    installd::symlink::link ${SCRIPTDIR}/doi ${BINDIR}/doi
+    for flag in ${flags}; do
+      if [[ ${flag} != "install_deps" ]] && [[ ${(P)flag} == 1 ]]; then
+        installd::${flag}
+      fi
+    done
   fi
 }
