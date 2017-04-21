@@ -83,12 +83,10 @@ main () {
 
 # respect users current $XDG_CONFIG_HOME if set
 if [[ -v ${XDG_CONFIG_HOME} ]]; then
-  CONFIGDIR="${XDG_CONFIG_HOME}"
+  local -r CONFIGDIR="${XDG_CONFIG_HOME}"
 else
-  CONFIGDIR="${HOME}/.config"
+  local -r CONFIGDIR="${HOME}/.config"
 fi
-
-readonly CONFIGDIR
 
   { [[ $ZSH_VERSION > 5.2 ]] || [[ $ZSH_VERSION == 5.2 ]] } \
     || {
