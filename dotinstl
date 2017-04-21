@@ -1,53 +1,33 @@
 #!/usr/bin/zsh
 setopt extendedglob
 
+# global constants
+SCRIPT_NAME="${0:t}"
+SCRIPTDIR="${0:A:h}"
+TMPDIR=$( mktemp -d /tmp/doi.XXXXXXXXXXXXXXXX )
+SRCDIR="${SCRIPTDIR}/src"
+
 readonly \
-  SCRIPT_NAME="${0:t}" \
-  SCRIPTDIR="${0:A:h}"
-  SRCDIR="${SCRIPTDIR}/src" \
-  ZSHDIR="${SCRIPTDIR}/zsh" \
-  GHCIDIR="${SCRIPTDIR}/ghci" \
-  NVIMDIR="${SCRIPTDIR}/neovim" \
-  X11DIR="${SCRIPTDIR}/xmonad" \
-  TMUXDIR="${SCRIPTDIR}/tmux" \
-  DISTDIR="${SCRIPTDIR}/dist" \
-  BINDIR="${HOME}/.local/bin"
+  SCRIPT_NAME \
+  SCRIPTDIR \
+  TMPDIR \
+  SRCDIR
 
-if [[ -v ${XDG_CONFIG_HOME} ]]; then
-  CONFIGDIR="${XDG_CONFIG_HOME}"
-else
-  CONFIGDIR="${HOME}/.config"
-fi
-
-readonly CONFIGDIR
-
+# alias to simplify checking if a command is in path
 alias exists="> /dev/null type -p"
 
-dot_err () {
-  local -r \
-    RED='\033[0;31m' \
-    COLOR_OFF='\033[0m'
 
-  print -u2 "${RED}ERROR:${COLOR_OFF}" "$@"
-}
-
+# sources
 . ${SRCDIR}/options
 . ${SRCDIR}/dependencies
 . ${SRCDIR}/installd
 
+# remove TMPDIR on exit ensuring that it matches spec first
 finish () {
   {
-    rm -rf /tmp/package-query
-    rm -rf /tmp/yaourt
-    rm -rf /tmp/dzvol
-    rm -rf /tmp/hub-linux-amd64*/
-    rm -rf /tmp/imgur
-    rm -rf /tmp/farbfeld-3
-    rm -f  /tmp/installer.sh
-    rm -f /tmp/pyth3-pypeg.deb
-    rm -f /tmp/qutebrowser.deb
-    rm -f /tmp/antibody.tar.gz
-    rm -f /tmp/hub.tgz
+    if [[ ${TMPDIR} =~ '^/tmp/doi\.([0-9a-zA-Z]){16}$' ]]; then
+      rm -rf --one-file-system --preserve-root ${TMPDIR}
+    fi
   } &> /dev/null
 }
 
@@ -56,36 +36,88 @@ finish::failed () {
   exit 1
 }
 
+finish::success () {
+  finish
+  exit 0
+}
+
+dot_err () {
+  print -u2 "error:" "$@"
+}
+
 usage () {
   cat <<EOF
-usage: ${SCRIPT_NAME} [-aztnxi]
-       ${SCRIPT_NAME} [-aztnxu]
+Usage: ${SCRIPT_NAME} <command> <target> [options]
 
-  -a      Install all dotfiles
-  -i      Install package dependencies for chosen dotfiles
-  -u      Uninstall chosen dotfiles
-  -z      Install Zsh dotfiles
-  -t      Install Tmux dotfiles
-  -g      Install GHCi dotfiles
-  -n      Install Neovim dotfiles
-  -x      Install X11 dotfiles
-  -h      Print this usage message
+COMMANDS:
+  ln   Create symlinks for selected dotfiles (default: zsh only)
+  rm   Remove symlinks and any files created during ln
+
+TARGETS:
+  -a   Install all     dotfiles
+  -z   Install Zsh     dotfiles
+  -t   Install Tmux    dotfiles
+  -g   Install GHCi    dotfiles
+  -n   Install Neovim  dotfiles
+  -x   Install X11     dotfiles
+
+Options:
+  -i   Install package dependencies for chosen dotfiles (ln only)
+  -h   Print this usage message
 EOF
 }
 
 main () {
+  # exit trap for consistently clean exit
   trap "trap - SIGTERM && finish && kill -- -$$" \
     SIGINT SIGTERM
 
+  ZSHDIR="${SCRIPTDIR}/zsh"
+  GHCIDIR="${SCRIPTDIR}/ghci"
+  NVIMDIR="${SCRIPTDIR}/neovim"
+  X11DIR="${SCRIPTDIR}/xmonad"
+  TMUXDIR="${SCRIPTDIR}/tmux"
+  DISTDIR="${SCRIPTDIR}/dist"
+  BINDIR="${HOME}/.local/bin"
+
+  local -r \
+    ZSHDIR \
+    GHCIDIR \
+    NVIMDIR \
+    X11DIR \
+    TMUXDIR \
+    DISTDIR \
+    BINDIR
+
+# respect users current $XDG_CONFIG_HOME if set
+if [[ -v ${XDG_CONFIG_HOME} ]]; then
+  CONFIGDIR="${XDG_CONFIG_HOME}"
+else
+  CONFIGDIR="${HOME}/.config"
+fi
+
+readonly CONFIGDIR
+
   { [[ $ZSH_VERSION > 5.2 ]] || [[ $ZSH_VERSION == 5.2 ]] } \
     || {
-      printf "zsh version must be higher than 5.2\n"
+      printf "zsh version must be 5.2 or higher\n"
       exit
     }
 
+  local CMD
+
   local -Ua \
-    FLAGS \
-    missing_dependencies
+    missing_dependencies \
+
+  local -ar \
+    flags=( all zsh tmux ghci neovim x11 install_deps )
+
+  local -Ua shortflags
+
+  # create short flags aray with only first letter of every flag as element
+  for sflag in ${flags}; do
+    shortflags+=${sflag:0:1}
+  done
 
   # distro dependencies for arch and ubuntu
   local -Ar YAOURT_DEPENDENCIES=( \

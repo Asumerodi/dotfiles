@@ -2,12 +2,12 @@ dependencies () {
   dependencies::check \
     || finish::failed
 
-  (( ${FLAGS[(I)INSTALL]} )) &&
+  [[ ${install_deps} == 1 ]] &&
     dependencies::install
 
   {
     [[ -z ${missing_dependencies} ]] \
-      || (( ${FLAGS[(I)UNINSTALL]} ))
+      || [[ ${CMD} == "rm" ]]
   } \
     || {
       dot_err "depenencies are not satisfied.\ntry installing with -i"
@@ -30,14 +30,14 @@ dependencies::check () {
     finish::failed
   fi
 
-  if (( ${FLAGS[(I)ALL]} )); then
+  if [[ ${all} == 1 ]]; then
     for key in ${(P@k)dependencies}; do
       for package in ${=${(P)dependencies}[${key}]}; do
         dependencies::check::package ${package}
       done
     done
   else
-    for flag in ${FLAGS[@]/(INSTALL|UNINSTALL)}; do
+    for flag in ${flags[@]/install_deps}; do
       for package in ${=${(P)dependencies}[${flag}]}; do
         dependencies::check::package ${package}
       done
@@ -100,16 +100,16 @@ dependencies::install::yaourt () {
       sudo pacman -S base-devel --needed --noconfirm \
         || sudo pacman -S multilib-devel --needed --noconfirm \
         && git clone https://aur.archlinux.org/package-query.git \
-          /tmp/package-query > /dev/null \
+          ${TMPDIR}/package-query > /dev/null \
         && (
-          cd /tmp/package-query \
+          cd ${TMPDIR}/package-query \
             || return 1 \
             && makepkg -si --noconfirm --needed \
         ) \
         && git clone https://aur.archlinux.org/yaourt.git \
-          /tmp/yaourt > /dev/null \
+          ${TMPDIR}/yaourt > /dev/null \
         && (
-          cd /tmp/yaourt \
+          cd ${TMPDIR}/yaourt \
             || return 1 \
             && makepkg -si --noconfirm --needed \
         )
@@ -124,7 +124,7 @@ dependencies::install::yaourt () {
 }
 
 dependencies::install::ubuntu () {
-  (( ${FLAGS[(I)zsh]} )) || (( ${FLAGS[(I)ALL]} )) \
+  [[ ${flags[zsh]} == 1 ]] || [[ ${flags[all]} == 1 ]] \
     && {
       (( ${missing_dependencies[(I)antibody]} )) \
         && curl -sL https://git.io/antibody | bash -s \
@@ -135,10 +135,10 @@ dependencies::install::ubuntu () {
           # download latest hub release
           curl -s -L https://github.com/github/hub/releases/latest \
             | egrep -o 'github/hub/releases/download/.*/hub-linux-amd64.*\.tgz' \
-            | wget --base=http://github.com/ -i - -O /tmp/hub.tgz
+            | wget --base=http://github.com/ -i - -O ${TMPDIR}/hub.tgz
 
           (
-            cd /tmp || return 1
+            cd ${TMPDIR} || return 1
             tar xvfz ./hub.tgz
             sudo hub-linux-amd64*/install
           )
@@ -147,7 +147,7 @@ dependencies::install::ubuntu () {
         && missing_dependencies=(${(@)missing_dependencies:#hub})
     }
 
-  (( ${FLAGS[(I)neovim]} )) || (( ${FLAGS[(I)ALL]} )) \
+  [[ ${flags[neovim]} == 1 ]] || [[ ${flags[all]} == 1 ]] \
     && {
       (( ${missing_dependencies[(I)neovim]} )) \
         && {
@@ -158,19 +158,19 @@ dependencies::install::ubuntu () {
         }
     }
 
-  (( ${FLAGS[(I)x11]} )) || (( ${FLAGS[(I)ALL]} )) \
+  [[ ${flags[x11]} == 1 ]] || [[ ${flags[all]} == 1 ]] \
     && {
       (( ${missing_dependencies[(I)qutebrowser]} )) \
         && {
           # download latest qutebrowser release
           curl -s -L https://github.com/qutebrowser/qutebrowser/releases/latest \
             | egrep -o 'qutebrowser/qutebrowser/releases/download/.*/.*\.deb' \
-            | wget --base=http://github.com/ -i - -O /tmp/qutebrowser.deb
+            | wget --base=http://github.com/ -i - -O ${TMPDIR}/qutebrowser.deb
           wget https://qutebrowser.org/python3-pypeg2_2.15.2-1_all.deb \
-            -O /tmp/python3-pypeg.deb
+            -O ${TMPDIR}/python3-pypeg.deb
 
-          sudo apt-get install -y /tmp/python3-pypeg.deb
-          sudo apt-get install -y /tmp/qutebrowser.deb
+          sudo apt-get install -y ${TMPDIR}/python3-pypeg.deb
+          sudo apt-get install -y ${TMPDIR}/qutebrowser.deb
 
         } \
         && missing_dependencies=(${(@)missing_dependencies:#qutebrowser})

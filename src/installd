@@ -6,11 +6,13 @@ installd () {
     BALL=(" ●    " "  ●   " "   ●  " "    ● " "     ●" \
         "    ● " "   ●  " "  ●   " " ●    " "●     ")
 
-  if (( ${FLAGS[(I)ALL]} )); then
+  if [[ ${all} == 1 ]]; then
     installd::all
   else
-    for flag in ${FLAGS[@]/(INSTALL|UNINSTALL)}; do
-      installd::${flag}
+    for flag in ${flags}; do
+      if [[ ${flag} != "install_deps" ]] && [[ ${(P)flag} == 1 ]]; then
+        installd::${flag}
+      fi
     done
   fi
 }
@@ -102,7 +104,7 @@ installd::all () {
 installd::zsh () {
   local -i existing_dotfiles
 
-  if ! (( ${FLAGS[(I)UNINSTALL]} )); then
+  if [[ ${CMD} == "ln" ]]; then
     installd::spinner "zsh   " &
 
     installd::symlink ${ZSHDIR}/*
@@ -183,7 +185,7 @@ installd::zsh () {
 installd::tmux () {
   local -i existing_dotfiles
 
-  if ! (( ${FLAGS[(I)UNINSTALL]} )); then
+  if [[ ${CMD} == "ln" ]]; then
 
     # create needed dir
     mkdir -p ${BINDIR}
@@ -222,7 +224,7 @@ installd::tmux () {
 installd::ghci () {
   local -i existing_dotfiles
 
-  if ! (( ${FLAGS[(I)UNINSTALL]} )); then
+  if [[ ${CMD} == "ln" ]]; then
     # create needed dirs
     mkdir -p ${HOME}/.ghc
 
@@ -255,7 +257,7 @@ installd::neovim () {
 
   local -i existing_dotfiles
 
-  if ! (( ${FLAGS[(I)UNINSTALL]} )); then
+  if [[ ${CMD} == "ln" ]]; then
     # create needed dirs
     mkdir -p ${CONFIGDIR}/nvim
     mkdir -p ${BINDIR}
@@ -270,8 +272,8 @@ installd::neovim () {
     # install dein plugin manager
     [[ -a ${CONFIGDIR}/nvim/dein ]] \
       || {
-        curl ${dein} > /tmp/installer.sh
-        sh /tmp/installer.sh ${CONFIGDIR}/nvim/dein
+        curl ${dein} > ${TMPDIR}/installer.sh
+        sh ${TMPDIR}/installer.sh ${CONFIGDIR}/nvim/dein
       } &> /dev/null \
         || {
           kill %%
@@ -301,7 +303,7 @@ installd::neovim () {
 installd::x11 () {
   local -i existing_dotfiles
 
-  if ! (( ${FLAGS[(I)UNINSTALL]} )); then
+  if [[ ${CMD} == "ln" ]]; then
       # create needed dirs
       mkdir -p ${HOME}/.xmonad
       mkdir -p ${BINDIR}
@@ -316,9 +318,9 @@ installd::x11 () {
 
       exists dzvol \
         || {
-          git clone https://github.com/allevaton/dzvol /tmp/dzvol
+          git clone https://github.com/allevaton/dzvol ${TMPDIR}/dzvol
           (
-            cd /tmp/dzvol \
+            cd ${TMPDIR}/dzvol \
               || return 1
 
             make
@@ -334,8 +336,8 @@ installd::x11 () {
         # imgur upload script
         exists imgur.sh \
           || {
-            git clone https://github.com/tremby/imgur.sh /tmp/imgur
-            mv /tmp/imgur/imgur.sh ${BINDIR}
+            git clone https://github.com/tremby/imgur.sh ${TMPDIR}/imgur
+            mv ${TMPDIR}/imgur/imgur.sh ${BINDIR}
           } &> /dev/null \
             || {
               kill %%
@@ -345,7 +347,7 @@ installd::x11 () {
         exists png2ff \
           || {
             (
-              cd /tmp
+              cd ${TMPDIR}
               tar -xJf ${DISTDIR}/dist/farbfeld-3.tar.xz
               cd farbfeld-3
               sudo make install
