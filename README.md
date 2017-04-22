@@ -6,20 +6,24 @@ My preferred configuration for `Zsh`, `Tmux`, `Neovim`, `GHCi` and `Xmonad`.
 
 <hr />
 
-### Usage: doi \<command\> \<target\> [options]
 
-> COMMANDS: <br />
-> > ln &nbsp; &nbsp; &nbsp; Create symlinks for selected dotfiles (default: zsh only) <br />
-rm  &nbsp; &nbsp; Remove symlinks and any files created during ln <br />
+```
+Usage: doi <command> <target> [options]
 
-> TARGETS: <br />
-> > -a &nbsp; &nbsp; &nbsp;  Install all     dotfiles <br />
--z &nbsp; &nbsp; &nbsp;  Install Zsh     dotfiles <br />
--t &nbsp; &nbsp; &nbsp;  Install Tmux    dotfiles <br />
--g &nbsp; &nbsp; &nbsp;  Install GHCi    dotfiles <br />
--n &nbsp; &nbsp; &nbsp;  Install Neovim  dotfiles <br />
--x &nbsp; &nbsp; &nbsp;  Install X11     dotfiles <br />
+  COMMANDS:
+    ln   Create symlinks for selected dotfiles (default: zsh only)
+    rm   Remove symlinks and any files created during ln
 
-> OPTIONS: <br />
-> > -i &nbsp; &nbsp; &nbsp; &nbsp; Install package dependencies for chosen dotfiles (ln only) <br />
--h &nbsp; &nbsp; &nbsp; Print this usage message <br />
+  TARGETS:
+    -a   Install all     dotfiles
+    -z   Install Zsh     dotfiles
+    -t   Install Tmux    dotfiles
+    -g   Install GHCi    dotfiles
+    -n   Install Neovim  dotfiles
+    -x   Install X11     dotfiles
+
+  OPTIONS:
+    -i   Install package dependencies for chosen dotfiles (ln only)
+    -f   Force ln to backup existing files instead of failing
+    -v   Verbose output
+```
