@@ -51,11 +51,34 @@ installd::symlink::link () {
     file=$1 \
     symlink=$2
 
+
   ln -sT ${file} ${symlink} &> /dev/null \
     || if [[ ${file} != ${symlink:A} ]]; then
-      existing_dotfiles+=1
-      dot_err "${symlink} exists:"
-      dot_err "  and doesn't point to ${file}"
+      if [[ ${force} = 1 ]]; then
+        typeset -ga backupmessage
+        local -r backupfile=${symlink}
+
+        if ! [[ -s ${backupfile} ]]; then
+          case ${backupfile} in
+            */bin/*)
+              local -r backupdir=${BACKUPDIR}/bin
+              ;;
+            *)
+              local -r backupdir=${BACKUPDIR}/${funcstack[3]##*::}
+              ;;
+          esac
+
+          mkdir -p ${backupdir}
+          mv ${backupfile} ${backupdir} \
+            && backupmessage+=${backupfile##*/}
+
+          ln -sT ${file} ${symlink} &> /dev/null
+        fi
+      else
+        existing_dotfiles+=1
+        dot_err "${symlink} exists:"
+        dot_err "  and doesn't point to ${file}"
+      fi
     fi
 }
 
@@ -227,7 +250,7 @@ installd::ghci () {
     # uninstall
     printf "  ghci   done${RED} ✘  ${COLOR_OFF}\n"
     rm -f    ${HOME}/.ghc/ghci.extra.hs
-    rm -f    ${HOME}/.ghc/ghci
+    rm -f    ${HOME}/.ghc/ghci.conf
   fi
 }
 
@@ -361,10 +384,10 @@ installd () {
         "    ● " "   ●  " "  ●   " " ●    " "●     ")
 
   if [[ ${all} == 1 ]]; then
-    installd::symlink::link ${SCRIPTDIR}/doi ${BINDIR}/doi
+    installd::symlink::link ${SCRIPTDIR}/${SCRIPT_NAME} ${BINDIR}/${SCRIPT_NAME}
     installd::all
   else
-    installd::symlink::link ${SCRIPTDIR}/doi ${BINDIR}/doi
+    installd::symlink::link ${SCRIPTDIR}/${SCRIPT_NAME} ${BINDIR}/${SCRIPT_NAME}
     for flag in ${flags}; do
       if [[ ${flag} != "install_deps" ]] && [[ ${(P)flag} == 1 ]]; then
         installd::${flag}

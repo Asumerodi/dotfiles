@@ -13,14 +13,30 @@ readonly \
   TMPDIR \
   SRCDIR
 
-# alias to simplify checking if a command is in path
+# alias to simplify checking if a command is in $path
 alias exists="> /dev/null type -p"
 
-
 # sources
-. ${SRCDIR}/options
-. ${SRCDIR}/dependencies
-. ${SRCDIR}/installd
+for sourable in options dependencies installd; do
+  . ${SRCDIR}/${sourable} &> /dev/null \
+    || {
+      print -u2 "error: failed to find include: ${sourable}"
+
+      if ! [[ -v source_error ]]; then
+        readonly -i source_error=1
+      fi
+    }
+done
+
+if [[ ${source_error} == 1 ]]; then
+  if [[ ${SCRIPT_NAME} == "zsh" ]]; then
+    print -u2 "\nyou cannot pipe this script"
+  else
+    print -u2 "\nyou may have deleted something you were not supposed to"
+    print -u2 "\ntry 'git checkout master'"
+  fi
+  exit 1
+fi
 
 # remove TMPDIR on exit ensuring that it matches spec first
 finish () {
@@ -38,6 +54,13 @@ finish::failed () {
 
 finish::success () {
   finish
+  if [[ -n ${backupmessage} ]]; then
+    for message in ${backupmessage}; do
+      print "${message} successfully backed up to ${BACKUPDIR}"
+    done
+  fi
+
+  trap '' EXIT SIGTERM SIGINT
   exit 0
 }
 
@@ -49,29 +72,26 @@ usage () {
   cat <<EOF
 Usage: ${SCRIPT_NAME} <command> <target> [options]
 
-COMMANDS:
-  ln   Create symlinks for selected dotfiles (default: zsh only)
-  rm   Remove symlinks and any files created during ln
+  COMMANDS:
+    ln   Create symlinks for selected dotfiles (default: zsh only)
+    rm   Remove symlinks and any files created during ln
 
-TARGETS:
-  -a   Install all     dotfiles
-  -z   Install Zsh     dotfiles
-  -t   Install Tmux    dotfiles
-  -g   Install GHCi    dotfiles
-  -n   Install Neovim  dotfiles
-  -x   Install X11     dotfiles
+  TARGETS:
+    -a   Install all     dotfiles
+    -z   Install Zsh     dotfiles
+    -t   Install Tmux    dotfiles
+    -g   Install GHCi    dotfiles
+    -n   Install Neovim  dotfiles
+    -x   Install X11     dotfiles
 
-Options:
-  -i   Install package dependencies for chosen dotfiles (ln only)
-  -h   Print this usage message
+  OPTIONS:
+    -i   Install package dependencies for chosen dotfiles (ln only)
+    -f   Force ln to backup existing files instead of failing
 EOF
 }
 
 main () {
-  # exit trap for consistently clean exit
-  trap "trap - SIGTERM && finish && kill -- -$$" \
-    SIGINT SIGTERM
-
+  # various paths used throughout the script
   local -r \
     ZSHDIR="${SCRIPTDIR}/zsh" \
     GHCIDIR="${SCRIPTDIR}/ghci" \
@@ -79,35 +99,22 @@ main () {
     X11DIR="${SCRIPTDIR}/xmonad" \
     TMUXDIR="${SCRIPTDIR}/tmux" \
     DISTDIR="${SCRIPTDIR}/dist" \
+    BACKUPDIR="${SCRIPTDIR}/backup" \
     BINDIR="${HOME}/.local/bin"
 
-# respect users current $XDG_CONFIG_HOME if set
-if [[ -v ${XDG_CONFIG_HOME} ]]; then
-  local -r CONFIGDIR="${XDG_CONFIG_HOME}"
-else
-  local -r CONFIGDIR="${HOME}/.config"
-fi
-
-  { [[ $ZSH_VERSION > 5.2 ]] || [[ $ZSH_VERSION == 5.2 ]] } \
-    || {
-      printf "zsh version must be 5.2 or higher\n"
-      exit
-    }
-
+  # the command being called
   local CMD
 
+  # for dependencies checker and backup success printer
   local -Ua \
     missing_dependencies \
+    backupmessage
 
+  # for manual flag parsing
   local -ar \
-    flags=( all zsh tmux ghci neovim x11 install_deps )
+    flags=( all zsh tmux ghci neovim x11 install_deps force )
 
   local -Ua shortflags
-
-  # create short flags aray with only first letter of every flag as element
-  for sflag in ${flags}; do
-    shortflags+=${sflag:0:1}
-  done
 
   # distro dependencies for arch and ubuntu
   local -Ar YAOURT_DEPENDENCIES=( \
@@ -133,13 +140,41 @@ fi
               x11-xserver-utils qutebrowser git"
   )
 
+  # respect users current $XDG_CONFIG_HOME if set
+  if [[ -v ${XDG_CONFIG_HOME} ]]; then
+    local -r CONFIGDIR="${XDG_CONFIG_HOME}"
+  else
+    local -r CONFIGDIR="${HOME}/.config"
+  fi
+
+  # failed if this script is running through a pipe
+  if [[ ${SCRIPT_NAME} == "zsh" ]]; then
+    dot_err "script cannot be piped; call directly instead"
+    finish::failed
+  fi
+
+  { [[ $ZSH_VERSION > 5.2 ]] || [[ $ZSH_VERSION == 5.2 ]] } \
+    || {
+      printf "zsh version must be 5.2 or higher\n"
+    finish::failed
+    }
+
+  # exit trap for consistently clean exit
+  trap "trap - SIGTERM && finish && kill -- -$$" \
+    SIGINT SIGTERM EXIT
+
+  # create short flags aray with only first letter of every flag as element
+  for sflag in ${flags}; do
+    shortflags+=${sflag:0:1}
+  done
+
   options $@
 
   dependencies
 
   installd
 
-  finish
+  finish::success
 }
 
  main $@

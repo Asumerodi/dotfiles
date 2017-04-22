@@ -48,7 +48,7 @@ options::parse () {
   # remove leading '-'; parse individual letters of each arguement.
   # use parameter exapnsion to generate flag names dynamically
   # check if the current letter matches the current value in shortflag array
-  # i flag is not valid for rm option test for it
+  # i and f flag is not valid for rm option test for it
   # if everything checks out declare a global with current flag name and set to 1
   # if not then add the invalid value to an array for error reporting
 
@@ -59,7 +59,7 @@ options::parse () {
         for (( j=1; j <= ${#flags}; j++ )); do
           case ${opt:$i:1} in
             ${shortflags[$j]})
-              if [[ ${CMD} == "rm" ]] && [[ ${opt:$i:1} == "i" ]]; then
+              if [[ ${CMD} == "rm" ]] && [[ ${opt:$i:1} == "(i|f)" ]]; then
                 invalid_flags+=${opt:$i:1}
               else
                 readonly -g ${flags[$j]}=1
