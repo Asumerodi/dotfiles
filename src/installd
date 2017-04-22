@@ -109,7 +109,9 @@ installd::zsh () {
   local -i existing_dotfiles
 
   if [[ ${CMD} == "ln" ]]; then
-    installd::spinner "zsh   " &
+    if [[ ${verbose} == 0 ]]; then
+      installd::spinner "zsh   " &
+    fi
 
     installd::symlink ${ZSHDIR}/*
 
@@ -154,13 +156,13 @@ installd::zsh () {
 
     # create dircolors file
       zsh -ic "setupsolarized dircolors.ansi-dark"
-    fi &> /dev/null
+    fi &> ${quiet}
 
     # install fzf
     if ! [[ -a ${HOME}/.fzf.zsh ]]; then
       git clone https://github.com/junegunn/fzf ${HOME}/.fzf
       ${HOME}/.fzf/install --all
-    fi &> /dev/null
+    fi &> ${quiet}
 
     # change XDG_CONFIG_HOME if using a different value
     if [[ ${CONFIGDIR} != ${HOME}/.config ]]; then
@@ -193,7 +195,9 @@ installd::tmux () {
 
     # create needed dir
     mkdir -p ${BINDIR}
-    installd::spinner "tmux  " &
+    if [[ ${verbose} == 0 ]]; then
+      installd::spinner "tmux  " &
+    fi
 
     installd::symlink ${TMUXDIR}/^bin ${TMUXDIR}/bin/*
 
@@ -210,7 +214,7 @@ installd::tmux () {
           dot_err "tmux plugins failed to download"
           return 1
         }
-    fi &> /dev/null
+    fi &> ${quiet}
 
     kill %%
     printf "  tmux   done${GREEN} ✓  ${COLOR_OFF}\n"
@@ -232,7 +236,9 @@ installd::ghci () {
     # create needed dirs
     mkdir -p ${HOME}/.ghc
 
-    installd::spinner "ghci  " &
+    if [[ ${verbose} == 0 ]]; then
+      installd::spinner "ghci  " &
+    fi
 
     installd::symlink ${GHCIDIR}/*
 
@@ -242,7 +248,7 @@ installd::ghci () {
     {
       stack setup
       stack ghc --package pretty-show --package hscolour
-    } &> /dev/null
+    } &> ${quiet}
 
     kill %%
     printf "  ghci   done${GREEN} ✓  ${COLOR_OFF}\n"
@@ -266,7 +272,9 @@ installd::neovim () {
     mkdir -p ${CONFIGDIR}/nvim
     mkdir -p ${BINDIR}
 
-    installd::spinner "neovim" &
+    if [[ ${verbose} == 0 ]]; then
+      installd::spinner "neovim" &
+    fi
 
     installd::symlink ${NVIMDIR}/*
 
@@ -278,7 +286,7 @@ installd::neovim () {
       || {
         curl ${dein} > ${TMPDIR}/installer.sh
         sh ${TMPDIR}/installer.sh ${CONFIGDIR}/nvim/dein
-      } &> /dev/null \
+      } &> ${quiet} \
         || {
           kill %%
           dot_err "dein failed to install"
@@ -286,7 +294,7 @@ installd::neovim () {
         }
 
     # load nvim and install plugins; if clause in vimrc will install missing
-      nvim --headless +qall 2> /dev/null \
+      nvim --headless +qall 2> ${quiet} \
         || {
           kill %%
           dot_err "dein plugins failed to download"
@@ -314,7 +322,9 @@ installd::x11 () {
       mkdir -p ${BINDIR}
       mkdir -p ${CONFIGDIR}/mpv
 
-      installd::spinner "x11   " &
+      if [[ ${verbose} == 0 ]]; then
+        installd::spinner "x11   " &
+      fi
 
       installd::symlink ${X11DIR}/bin/* ${X11DIR}/^bin
 
@@ -331,7 +341,7 @@ installd::x11 () {
             make
             mv dzvol ${BINDIR}/dzvol
           )
-        } &> /dev/null \
+        } &> ${quiet} \
           || {
             kill %%
             dot_err "dzvol failed to install"
@@ -343,7 +353,7 @@ installd::x11 () {
           || {
             git clone https://github.com/tremby/imgur.sh ${TMPDIR}/imgur
             mv ${TMPDIR}/imgur/imgur.sh ${BINDIR}
-          } &> /dev/null \
+          } &> ${quiet} \
             || {
               kill %%
               dot_err "imgur.sh failed to install"

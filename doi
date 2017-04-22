@@ -40,11 +40,9 @@ fi
 
 # remove TMPDIR on exit ensuring that it matches spec first
 finish () {
-  {
-    if [[ ${TMPDIR} =~ '^/tmp/doi\.([0-9a-zA-Z]){16}$' ]]; then
-      rm -rf --one-file-system --preserve-root ${TMPDIR}
-    fi
-  } &> /dev/null
+  if [[ ${TMPDIR} =~ '^/tmp/doi\.([0-9a-zA-Z]){16}$' ]]; then
+    rm -rf --one-file-system --preserve-root ${TMPDIR}
+  fi
 }
 
 finish::failed () {
@@ -112,7 +110,7 @@ main () {
 
   # for manual flag parsing
   local -ar \
-    flags=( all zsh tmux ghci neovim x11 install_deps force )
+    flags=( all zsh tmux ghci neovim x11 install_deps force verbose )
 
   local -Ua shortflags
 
@@ -169,6 +167,13 @@ main () {
   done
 
   options $@
+
+  # whether to be verbose or not
+  if [[ ${verbose} == 1 ]]; then
+    local quiet=/dev/tty
+  else
+    local quiet=/dev/null
+  fi
 
   dependencies
 
