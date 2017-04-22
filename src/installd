@@ -87,7 +87,7 @@ installd::symlink::fail () {
     current=$1
 
   if [[ ${existing_dotfiles} != 0 ]]; then
-    kill %%
+    installd::verbose::kill
 
     printf "\n"
     dot_err "${current} dotfiles failed to install:"
@@ -105,11 +105,17 @@ installd::all () {
   installd::x11
 }
 
+installd::verbose::kill () {
+  if ! [[ -v verbose ]]; then
+    kill %%
+  fi
+}
+
 installd::zsh () {
   local -i existing_dotfiles
 
   if [[ ${CMD} == "ln" ]]; then
-    if [[ ${verbose} == 0 ]]; then
+    if ! [[ -v verbose ]]; then
       installd::spinner "zsh   " &
     fi
 
@@ -133,7 +139,7 @@ installd::zsh () {
 
       for stat in ${pipestatus}; do
         if [[ ${stat} != 0 ]]; then
-          kill %%
+          installd::verbose::kill
           dot_err "\nzsh dotfiles failed to install:"
           dot_err "  plugins failed to download, check your connection"
           return 1
@@ -147,7 +153,7 @@ installd::zsh () {
           && git submodule init \
           && git submodule update \
           || {
-            kill %%
+            installd::verbose::kill
             dot_err "zsh dotfiles failed to install:"
             dot_err "  zsh dircolors failed to install"
             return 1
@@ -171,7 +177,7 @@ installd::zsh () {
         ${ZSHDIR}/zprofile
     fi
 
-    kill %%
+    installd::verbose::kill
     printf "  zsh    done${GREEN} ✓  ${COLOR_OFF}\n"
   else
     # unistall flag
@@ -195,7 +201,7 @@ installd::tmux () {
 
     # create needed dir
     mkdir -p ${BINDIR}
-    if [[ ${verbose} == 0 ]]; then
+    if ! [[ -v verbose ]]; then
       installd::spinner "tmux  " &
     fi
 
@@ -205,18 +211,18 @@ installd::tmux () {
       || return 1
 
     # install tmux plugin manager and run script to install plugins
-    if ! [[ -a ${HOME}/.tmux/plugins/tpm ]];then
+    if ! [[ -a ${HOME}/.tmux/plugins/tpm ]]; then
       git clone https://github.com/tmux-plugins/tpm \
         ${HOME}/.tmux/plugins/tpm \
         && ${HOME}/.tmux/plugins/tpm/bin/install_plugins \
         || {
-          kill %%
+          installd::verbose::kill
           dot_err "tmux plugins failed to download"
           return 1
         }
     fi &> ${quiet}
 
-    kill %%
+    installd::verbose::kill
     printf "  tmux   done${GREEN} ✓  ${COLOR_OFF}\n"
   else
     # uninstall when UNINSTALL is passed
@@ -236,7 +242,7 @@ installd::ghci () {
     # create needed dirs
     mkdir -p ${HOME}/.ghc
 
-    if [[ ${verbose} == 0 ]]; then
+    if ! [[ -v verbose ]]; then
       installd::spinner "ghci  " &
     fi
 
@@ -250,7 +256,7 @@ installd::ghci () {
       stack ghc --package pretty-show --package hscolour
     } &> ${quiet}
 
-    kill %%
+    installd::verbose::kill
     printf "  ghci   done${GREEN} ✓  ${COLOR_OFF}\n"
   else
     # uninstall
@@ -272,7 +278,7 @@ installd::neovim () {
     mkdir -p ${CONFIGDIR}/nvim
     mkdir -p ${BINDIR}
 
-    if [[ ${verbose} == 0 ]]; then
+    if ! [[ -v verbose ]]; then
       installd::spinner "neovim" &
     fi
 
@@ -288,7 +294,7 @@ installd::neovim () {
         sh ${TMPDIR}/installer.sh ${CONFIGDIR}/nvim/dein
       } &> ${quiet} \
         || {
-          kill %%
+          installd::verbose::kill
           dot_err "dein failed to install"
           return 1
         }
@@ -296,12 +302,12 @@ installd::neovim () {
     # load nvim and install plugins; if clause in vimrc will install missing
       nvim --headless +qall 2> ${quiet} \
         || {
-          kill %%
+          installd::verbose::kill
           dot_err "dein plugins failed to download"
           return 1
         }
 
-    kill %%
+    installd::verbose::kill
     printf "  neovim done${GREEN} ✓  ${COLOR_OFF}\n"
   else
     # uninstall when UNINSTALL is passed
@@ -322,7 +328,7 @@ installd::x11 () {
       mkdir -p ${BINDIR}
       mkdir -p ${CONFIGDIR}/mpv
 
-      if [[ ${verbose} == 0 ]]; then
+      if ! [[ -v verbose ]]; then
         installd::spinner "x11   " &
       fi
 
@@ -343,7 +349,7 @@ installd::x11 () {
           )
         } &> ${quiet} \
           || {
-            kill %%
+            installd::verbose::kill
             dot_err "dzvol failed to install"
             return 1
         }
@@ -355,7 +361,7 @@ installd::x11 () {
             mv ${TMPDIR}/imgur/imgur.sh ${BINDIR}
           } &> ${quiet} \
             || {
-              kill %%
+              installd::verbose::kill
               dot_err "imgur.sh failed to install"
               return 1
             }
@@ -370,7 +376,7 @@ installd::x11 () {
           }
 
 
-    kill %%
+    installd::verbose::kill
     printf "  x11    done${GREEN} ✓  ${COLOR_OFF}\n"
   else
     # uninstall when UNINSTALL is passed

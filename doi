@@ -58,7 +58,7 @@ finish::success () {
     done
   fi
 
-  trap '' EXIT SIGTERM SIGINT
+  # trap '' EXIT SIGTERM SIGINT
   exit 0
 }
 
