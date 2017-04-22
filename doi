@@ -85,6 +85,7 @@ Usage: ${SCRIPT_NAME} <command> <target> [options]
   OPTIONS:
     -i   Install package dependencies for chosen dotfiles (ln only)
     -f   Force ln to backup existing files instead of failing
+    -v   Verbose output
 EOF
 }
 
