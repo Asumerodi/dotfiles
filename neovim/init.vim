@@ -16,6 +16,9 @@ if has('termguicolors')
   set termguicolors
 endif
 
+" indent wrapped lines same amount as the previous line
+set breakindent
+
 " source custom key binds
 source $HOME/.vim/plugins/keybinds.vim
 
