@@ -19,6 +19,7 @@
   SAVEHIST=10000
   HISTFILE=$HOME/.history
   DIRSTACKSIZE=5
+  export LESS=-XR
 
   # Sources
   . $HOME/.zsh/aliases.zsh
