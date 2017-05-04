@@ -6,6 +6,8 @@ alias ...="cd ../.."
 alias ....="cd ../../.."
 alias .....="cd ../../../.."
 
+alias le="ls -lh --color=always | less"
+alias lea="ls -lah --color=always | less"
 alias ls="ls --color=auto"
 alias dir="dir --color=auto"
 alias grep="grep --color=auto"
@@ -13,6 +15,8 @@ alias dmesg="dmesg --color"
 
 alias l="ls -lh"
 alias la="ls -lah"
+alias t="tree -hC | less"
+alias ta="tree -ahC | less"
 
 alias se="sudoedit"
 alias df="df -h"
