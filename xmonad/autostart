@@ -1,9 +1,10 @@
 #!/usr/bin/zsh
+terminal="st"
 
-if ! pgrep -x st; then
+if ! pgrep -x ${terminal}; then
   if ! pgrep -x "tmux: server"; then
-    st -e tmux new-session -s $(whoami)&!; else
-    st -e tmux attach-session -t $(whoami)&!
+    ${terminal} -e tmux new-session -s $(whoami)&!; else
+    ${terminal} -e tmux attach-session -t $(whoami)&!
   fi
 fi
 
