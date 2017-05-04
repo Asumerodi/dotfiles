@@ -29,12 +29,6 @@
     && FZF_CTRL_T_COMMAND=${rg_cmd} \
     && export FZF_DEFAULT_COMMAND FZF_CTRL_T_COMMAND
 
-  # temporary fix for retroarch kms context
-  if [[ -z $DISPLAY ]] && [[ -n $XDG_VTNR ]] && [[ $XDG_VTNR -gt 1 ]]; then
-    EGL_PLATFORM=0x31D7
-    export EGL_PLATFORM
-  fi
-
   if [[ -z $DISPLAY ]] && [[ -n $XDG_VTNR ]] && [[ $XDG_VTNR -eq 1 ]]; then
     exec startx
   fi
