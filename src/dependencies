@@ -30,18 +30,15 @@ dependencies::check () {
     finish::failed
   fi
 
+  local dep_check () {
+    each 'dependencies::check::package $1' ${=${(P)dependencies}[$1]}
+  }
+
   if (( ${flags[(I)all]} )); then
-    for key in ${(P@k)dependencies}; do
-      for package in ${=${(P)dependencies}[${key}]}; do
-        dependencies::check::package ${package}
-      done
-    done
+    # (P@k) == the keys of the associative array that dependencies points to
+    eachf dep_check ${(P@k)dependencies}
   else
-    for flag in ${flags}; do
-      for package in ${=${(P)dependencies}[${flag}]}; do
-        dependencies::check::package ${package}
-      done
-    done
+    eachf dep_check ${flags}
   fi
 }
 

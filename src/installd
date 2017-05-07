@@ -1,9 +1,11 @@
 installd::spinner () {
+  local -r target=$1
+
   while true; do
-    for b in $BALL; do
-      printf "  $@ $b\r"
+    each '
+      printf "  ${target} $1\r"
       sleep 0.1
-    done
+    ' $BALL
   done
 }
 

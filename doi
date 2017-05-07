@@ -39,9 +39,7 @@ finish::success () {
   finish
 
   if [[ -n ${backupmessage} ]]; then
-    for message in ${backupmessage}; do
-      print "${message} successfully backed up to ${BACKUPDIR}"
-    done
+    each 'print "$1 successfully backed up to ${BACKUPDIR}"' ${backupmessage}
   fi
 
   exit 0
