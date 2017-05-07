@@ -13,6 +13,8 @@ readonly \
   TMPDIR \
   SRCDIR
 
+##### CONVEINEICE FUNCTIONS #####
+
 # alias to simplify checking if a command is in $path
 alias exists="> /dev/null type -p"
 
@@ -44,6 +46,8 @@ finish::success () {
 
   exit 0
 }
+
+##########
 
 # chech zsh version matches requirement
 if ! [[ $ZSH_VERSION > 5.2 || $ZSH_VERSION == 5.2 ]]; then
@@ -153,6 +157,9 @@ main () {
     SIGINT SIGTERM EXIT
 
   options $@
+
+  # mark readonly to prevent modification from this point on
+  readonly flags CMD
 
   # whether to be verbose or not
   if [[ ${verbose} == 1 ]]; then
