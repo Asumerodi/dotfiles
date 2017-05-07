@@ -16,27 +16,10 @@ readonly \
 # alias to simplify checking if a command is in $path
 alias exists="> /dev/null type -p"
 
-# sources
-for sourable in options dependencies installd; do
-  . ${SRCDIR}/${sourable} &> /dev/null \
-    || {
-      print -u2 "error: failed to find include: ${sourable}"
-
-      if ! [[ -v source_error ]]; then
-        readonly -i source_error=1
-      fi
-    }
-done
-
-if [[ ${source_error} == 1 ]]; then
-  if [[ ${SCRIPT_NAME} == "zsh" ]]; then
-    print -u2 "\nyou cannot pipe this script"
-  else
-    print -u2 "\nyou may have deleted something you were not supposed to"
-    print -u2 "\ntry 'git checkout master'"
-  fi
-  exit 1
-fi
+# standard error message
+dot_err () {
+  print -u2 "unrecoverable error:" "$@"
+}
 
 # remove TMPDIR on exit ensuring that it matches spec first
 finish () {
@@ -52,19 +35,41 @@ finish::failed () {
 
 finish::success () {
   finish
+
   if [[ -n ${backupmessage} ]]; then
     for message in ${backupmessage}; do
       print "${message} successfully backed up to ${BACKUPDIR}"
     done
   fi
 
-  # trap '' EXIT SIGTERM SIGINT
   exit 0
 }
 
-dot_err () {
-  print -u2 "error:" "$@"
+# chech zsh version matches requirement
+if ! [[ $ZSH_VERSION > 5.2 || $ZSH_VERSION == 5.2 ]]; then
+  printf "zsh version must be 5.2 or higher\n"
+  finish::failed
+fi
+
+# fail on pipe
+if [[ ${SCRIPT_NAME} == "zsh" ]]; then
+  dot_err "you cannot pipe this script"
+  finish::failed
+fi
+
+# sources
+. ${SCRIPTDIR}/zsh-functional/functional.plugin.zsh
+
+sources () {
+  local sourable=$1
+  if ! . ${SRCDIR}/${sourable} &> /dev/null; then
+    dot_err "failed to find include: ${sourable}"
+    finish::failed
+  fi
 }
+
+# call sources on sourables
+eachf sources options dependencies installd
 
 usage () {
   cat <<EOF
@@ -110,10 +115,7 @@ main () {
     backupmessage
 
   # for manual flag parsing
-  local -ar \
-    flags=( all zsh tmux ghci neovim x11 install_deps force verbose )
-
-  local -Ua shortflags
+  local -a flags
 
   # distro dependencies for arch and ubuntu
   local -Ar YAOURT_DEPENDENCIES=( \
@@ -146,26 +148,9 @@ main () {
     local -r CONFIGDIR="${HOME}/.config"
   fi
 
-  # failed if this script is running through a pipe
-  if [[ ${SCRIPT_NAME} == "zsh" ]]; then
-    dot_err "script cannot be piped; call directly instead"
-    finish::failed
-  fi
-
-  { [[ $ZSH_VERSION > 5.2 ]] || [[ $ZSH_VERSION == 5.2 ]] } \
-    || {
-      printf "zsh version must be 5.2 or higher\n"
-    finish::failed
-    }
-
   # exit trap for consistently clean exit
   trap "trap - SIGTERM && finish && kill -- -$$" \
     SIGINT SIGTERM EXIT
-
-  # create short flags aray with only first letter of every flag as element
-  for sflag in ${flags}; do
-    shortflags+=${sflag:0:1}
-  done
 
   options $@
 

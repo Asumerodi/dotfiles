@@ -8,6 +8,7 @@ willghatch/zsh-cdr
 mafredri/zsh-async
 zsh-users/zsh-completions
 caarlos0/ports kind:path
+Tarrasch/zsh-functional
 
 # always last
 sindresorhus/pure

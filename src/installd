@@ -55,7 +55,6 @@ installd::symlink::link () {
   ln -sT ${file} ${symlink} &> /dev/null \
     || if [[ ${file} != ${symlink:A} ]]; then
       if [[ ${force} = 1 ]]; then
-        typeset -ga backupmessage
         local -r backupfile=${symlink}
 
         if ! [[ -s ${backupfile} ]]; then
@@ -91,7 +90,7 @@ installd::symlink::fail () {
 
     printf "\n"
     dot_err "${current} dotfiles failed to install:"
-    dot_err "  will not overwrite existing files"
+    dot_err "will not overwrite existing files unless -f is passed"
     printf "\n"
     return 1
   fi
@@ -106,7 +105,7 @@ installd::all () {
 }
 
 installd::verbose::kill () {
-  if ! [[ -v verbose ]]; then
+  if [[ ${verbose} != 1 ]]; then
     kill %%
   fi
 }
@@ -115,7 +114,7 @@ installd::zsh () {
   local -i existing_dotfiles
 
   if [[ ${CMD} == "ln" ]]; then
-    if ! [[ -v verbose ]]; then
+    if [[ ${verbose} != 1 ]]; then
       installd::spinner "zsh   " &
     fi
 
@@ -201,7 +200,7 @@ installd::tmux () {
 
     # create needed dir
     mkdir -p ${BINDIR}
-    if ! [[ -v verbose ]]; then
+    if [[ ${verbose} != 1 ]]; then
       installd::spinner "tmux  " &
     fi
 
@@ -242,7 +241,7 @@ installd::ghci () {
     # create needed dirs
     mkdir -p ${HOME}/.ghc
 
-    if ! [[ -v verbose ]]; then
+    if [[ ${verbose} != 1 ]]; then
       installd::spinner "ghci  " &
     fi
 
@@ -278,7 +277,7 @@ installd::neovim () {
     mkdir -p ${CONFIGDIR}/nvim
     mkdir -p ${BINDIR}
 
-    if ! [[ -v verbose ]]; then
+    if [[ ${verbose} != 1 ]]; then
       installd::spinner "neovim" &
     fi
 
@@ -328,7 +327,7 @@ installd::x11 () {
       mkdir -p ${BINDIR}
       mkdir -p ${CONFIGDIR}/mpv
 
-      if ! [[ -v verbose ]]; then
+      if [[ ${verbose} != 1 ]]; then
         installd::spinner "x11   " &
       fi
 
@@ -399,15 +398,13 @@ installd () {
     BALL=(" ●    " "  ●   " "   ●  " "    ● " "     ●" \
         "    ● " "   ●  " "  ●   " " ●    " "●     ")
 
-  if [[ ${all} == 1 ]]; then
+    if (( ${flags[(I)all]} )); then
     installd::symlink::link ${SCRIPTDIR}/${SCRIPT_NAME} ${BINDIR}/${SCRIPT_NAME}
     installd::all
   else
     installd::symlink::link ${SCRIPTDIR}/${SCRIPT_NAME} ${BINDIR}/${SCRIPT_NAME}
     for flag in ${flags}; do
-      if [[ ${flag} != "install_deps" ]] && [[ ${(P)flag} == 1 ]]; then
-        installd::${flag}
-      fi
+      installd::${flag}
     done
   fi
 }

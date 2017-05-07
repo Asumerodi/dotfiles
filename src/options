@@ -1,27 +1,9 @@
-options () {
-  if [[ -z $@ ]]; then
-    usage
-    finish::failed
-  fi
-
-  options::parse $@
-
-}
-
 options::parse () {
-  local invalid_flags
-
   # rm or ln command must come first
   if [[ $1 != (ln|rm|-h|--help) ]]; then
-    if [[ ${1:0:1} == "-" ]]; then
-      print -u2 "Unknown option: ${1}"
-      usage
-      finish::failed
-    else
-      print \
-        -u2 "${SCRIPT_NAME}: '$1' is not a valid command. See '${SCRIPT_NAME} --help'."
-      finish::failed
-    fi
+    dot_err "unknown command or option '$1'"
+    usage
+    finish::failed
   fi
 
   case $1 in
@@ -43,63 +25,61 @@ options::parse () {
       ;;
   esac
 
-  # manual options parser
-  # check for shortflag format '-*' or print error
-  # remove leading '-'; parse individual letters of each arguement.
-  # use parameter exapnsion to generate flag names dynamically
-  # check if the current letter matches the current value in shortflag array
-  # i and f flag is not valid for rm option test for it
-  # if everything checks out declare a global with current flag name and set to 1
-  # if not then add the invalid value to an array for error reporting
-
-  for opt in $@; do
-    if [[ ${opt:0:2} =~ "-[^- ]" ]]; then
-      opt=${opt#-}
-      for (( i=0; i < ${#opt}; i++ )); do
-        for (( j=1; j <= ${#flags}; j++ )); do
-          case ${opt:$i:1} in
-            ${shortflags[$j]})
-              if [[ ${CMD} == "rm" ]] && [[ ${opt:$i:1} == "(i|f)" ]]; then
-                invalid_flags+=${opt:$i:1}
-              else
-                readonly -g ${flags[$j]}=1
-              fi
-              ;;
-            *)
-              if (( ${shortflags[(I)${opt:$i:1}]} )); then
-                continue
-              else
-                invalid_flags+=${opt:$i:1}
-              fi
-              ;;
-          esac
-        done
-      done
-    else
-      invalid_flags+=${opt}
-    fi
+  while getopts ":aztgnxifv" option;do
+    case ${option} in
+      a)
+        flags+=all
+        ;;
+      z)
+        flags+=zsh
+        ;;
+      t)
+        flags+=tmux
+        ;;
+      g)
+        flags+=ghci
+        ;;
+      n)
+        flags+=neovim
+        ;;
+      x)
+        flags+=x11
+        ;;
+      i)
+        if [[ ${CMD} == rm ]]; then
+          options::invalid ${option}
+        else
+          readonly -gi install_deps=1
+        fi
+        ;;
+      f)
+        if [[ ${CMD} == rm ]]; then
+          options::invalid ${option}
+        else
+          readonly -gi force=1
+        fi
+        ;;
+      v)
+        readonly -gi verbose=1
+        ;;
+      *)
+        options::invalid ${option}
+        ;;
+    esac
   done
-
-
-  if [[ -n ${invalid_flags} ]]; then
-    options::invalid_flags ${invalid_flags}
-    finish::failed
-  fi
 }
 
-# error messages for invalid flags and options
-options::invalid_flags () {
-  local opt
-  opt=$@
+options::invalid () {
+  dot_err "invalid '${CMD}' option '${$1}'"
+  usage
+  finish::failed
+}
 
-  if [[ ${invalid_flags:0:2} == "--" ]]; then
-    dot_err "unknown '${CMD}' option \`${${invalid_flags#--}%% *}'"
-  else
-    if [[ ${CMD} == "rm" ]]; then
-      opt=${invalid_flags//(a|z|t|g|n|x)}
-    else
-      opt=${invalid_flags//(a|z|t|g|n|x|i)}
-    fi
-    dot_err "unknown '${CMD}' switch \`${${opt##(-)#}[1]}'"
+options () {
+  if [[ -z $@ ]]; then
+    usage
+    finish::failed
   fi
+
+  options::parse $@
 }

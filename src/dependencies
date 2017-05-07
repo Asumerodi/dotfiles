@@ -30,14 +30,14 @@ dependencies::check () {
     finish::failed
   fi
 
-  if [[ ${all} == 1 ]]; then
+  if (( ${flags[(I)all]} )); then
     for key in ${(P@k)dependencies}; do
       for package in ${=${(P)dependencies}[${key}]}; do
         dependencies::check::package ${package}
       done
     done
   else
-    for flag in ${flags[@]/install_deps}; do
+    for flag in ${flags}; do
       for package in ${=${(P)dependencies}[${flag}]}; do
         dependencies::check::package ${package}
       done
@@ -124,55 +124,51 @@ dependencies::install::yaourt () {
 }
 
 dependencies::install::ubuntu () {
-  [[ ${flags[zsh]} == 1 ]] || [[ ${flags[all]} == 1 ]] \
-    && {
-      (( ${missing_dependencies[(I)antibody]} )) \
-        && curl -sL https://git.io/antibody | bash -s \
-        && missing_dependencies=(${(@)missing_dependencies:#antibody})
+  if (( ${flags[(I)zsh]} )) || (( ${flags[(I)all]} )); then
+    if (( ${missing_dependencies[(I)antibody]} )); then
+      curl -sL https://git.io/antibody | bash -s \
+      && missing_dependencies=(${(@)missing_dependencies:#antibody})
+    fi
 
-      (( ${missing_dependencies[(I)hub]} )) \
-        && {
-          # download latest hub release
-          curl -s -L https://github.com/github/hub/releases/latest \
-            | egrep -o 'github/hub/releases/download/.*/hub-linux-amd64.*\.tgz' \
-            | wget --base=http://github.com/ -i - -O ${TMPDIR}/hub.tgz
+    if (( ${missing_dependencies[(I)hub]} )); then
+      # download latest hub release
+      curl -s -L https://github.com/github/hub/releases/latest \
+        | egrep -o 'github/hub/releases/download/.*/hub-linux-amd64.*\.tgz' \
+        | wget --base=http://github.com/ -i - -O ${TMPDIR}/hub.tgz
 
-          (
-            cd ${TMPDIR} || return 1
-            tar xvfz ./hub.tgz
-            sudo hub-linux-amd64*/install
-          )
+      #unpack and install
+      (
+        cd ${TMPDIR} || return 1
+        tar xvfz ./hub.tgz
+        sudo hub-linux-amd64*/install
+      ) \
+        || return 1
 
-        } \
-        && missing_dependencies=(${(@)missing_dependencies:#hub})
-    }
+      missing_dependencies=(${(@)missing_dependencies:#hub})
+    fi
+  fi
 
-  [[ ${flags[neovim]} == 1 ]] || [[ ${flags[all]} == 1 ]] \
-    && {
-      (( ${missing_dependencies[(I)neovim]} )) \
-        && {
-          sudo add-apt-repository -y ppa:neovim-ppa/unstable
-          sudo apt-get -y update
-          sudo apt-get install -y neovim python3-pip
-          pip3 install --upgrade neovim
-        }
-    }
+  if (( ${flags[(I)neovim]} )) || (( ${flags[(I)all]} )); then
+    if (( ${missing_dependencies[(I)neovim]} )); then
+      sudo add-apt-repository -y ppa:neovim-ppa/unstable
+      sudo apt-get -y update
+      sudo apt-get install -y neovim python3-pip
+      pip3 install --upgrade neovim
+    fi
+  fi
 
-  [[ ${flags[x11]} == 1 ]] || [[ ${flags[all]} == 1 ]] \
-    && {
-      (( ${missing_dependencies[(I)qutebrowser]} )) \
-        && {
-          # download latest qutebrowser release
-          curl -s -L https://github.com/qutebrowser/qutebrowser/releases/latest \
-            | egrep -o 'qutebrowser/qutebrowser/releases/download/.*/.*\.deb' \
-            | wget --base=http://github.com/ -i - -O ${TMPDIR}/qutebrowser.deb
-          wget https://qutebrowser.org/python3-pypeg2_2.15.2-1_all.deb \
-            -O ${TMPDIR}/python3-pypeg.deb
+  if (( ${flags[(I)x11]} )) || (( ${flags[(I)all]} )); then
+    if (( ${missing_dependencies[(I)qutebrowser]} )); then
+      # download latest qutebrowser release
+      curl -s -L https://github.com/qutebrowser/qutebrowser/releases/latest \
+        | egrep -o 'qutebrowser/qutebrowser/releases/download/.*/.*\.deb' \
+        | wget --base=http://github.com/ -i - -O ${TMPDIR}/qutebrowser.deb
+      wget https://qutebrowser.org/python3-pypeg2_2.15.2-1_all.deb \
+        -O ${TMPDIR}/python3-pypeg.deb
 
-          sudo apt-get install -y ${TMPDIR}/python3-pypeg.deb
-          sudo apt-get install -y ${TMPDIR}/qutebrowser.deb
-
-        } \
-        && missing_dependencies=(${(@)missing_dependencies:#qutebrowser})
-    }
+      sudo apt-get install -y ${TMPDIR}/python3-pypeg.deb
+      sudo apt-get install -y ${TMPDIR}/qutebrowser.deb \
+      && missing_dependencies=(${(@)missing_dependencies:#qutebrowser})
+    fi
+  fi
 }
