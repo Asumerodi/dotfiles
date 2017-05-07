@@ -142,7 +142,7 @@ main () {
   )
 
   # respect users current $XDG_CONFIG_HOME if set
-  if [[ -v ${XDG_CONFIG_HOME} ]]; then
+  if [[ ${XDG_CONFIG_HOME} != ${HOME}/.config ]]; then
     local -r CONFIGDIR="${XDG_CONFIG_HOME}"
   else
     local -r CONFIGDIR="${HOME}/.config"
