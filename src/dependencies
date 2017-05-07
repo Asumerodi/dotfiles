@@ -30,8 +30,10 @@ dependencies::check () {
     finish::failed
   fi
 
-  local dep_check () {
-    each 'dependencies::check::package $1' ${=${(P)dependencies}[$1]}
+  dep_check () {
+    local -r key=$1
+
+    each 'dependencies::check::package $1' ${=${(P)dependencies}[${key}]}
   }
 
   if (( ${flags[(I)all]} )); then
@@ -40,6 +42,8 @@ dependencies::check () {
   else
     eachf dep_check ${flags}
   fi
+
+  unfunction dep_check
 }
 
 dependencies::check::package () {

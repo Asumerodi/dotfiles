@@ -1,20 +1,26 @@
 installd::spinner () {
   local -r target=$1
 
-  while true; do
+  ball_loop () {
     each '
       printf "  ${target} $1\r"
       sleep 0.1
     ' $BALL
-  done
+
+    ball_loop
+  }
+
+  ball_loop
 }
 
 installd::symlink () {
   local symlink files
   files=$@
 
-  for file in ${=files}; do
-    # determine symlink location based on information in filepath
+  # determine symlink location based on information in filepath
+  link_conditionally () {
+    local -r file=$1
+
     case ${file} in
       */bin/*)
         symlink=${BINDIR}/${file:t}
@@ -45,7 +51,12 @@ installd::symlink () {
     esac
 
     installd::symlink::link ${file} ${symlink}
-  done
+  }
+
+  # map link_conditionally over all files
+  eachf link_conditionally ${=files}
+
+  unfunction link_conditionally
 }
 
 installd::symlink::link () {
@@ -138,14 +149,14 @@ installd::zsh () {
       printf "$(antibody init)\n$(<${ZSHDIR}/zsh/plugins.zsh)" \
         > ${ZSHDIR}/zsh/plugins.zsh
 
-      for stat in ${pipestatus}; do
-        if [[ ${stat} != 0 ]]; then
-          installd::verbose::kill
-          dot_err "\nzsh dotfiles failed to install:"
-          dot_err "  plugins failed to download, check your connection"
-          return 1
-        fi
-      done
+        each '
+          if [[ $1 != 0 ]]; then
+            installd::verbose::kill
+            dot_err "\nzsh dotfiles failed to install:"
+            dot_err "  plugins failed to download, check your connection"
+            return 1
+          fi
+        ' ${pipestatus}
 
       # initialize submodule for dircolors-solarized
       (
@@ -400,13 +411,11 @@ installd () {
     BALL=(" ●    " "  ●   " "   ●  " "    ● " "     ●" \
         "    ● " "   ●  " "  ●   " " ●    " "●     ")
 
-    if (( ${flags[(I)all]} )); then
+  if (( ${flags[(I)all]} )); then
     installd::symlink::link ${SCRIPTDIR}/${SCRIPT_NAME} ${BINDIR}/${SCRIPT_NAME}
     installd::all
   else
     installd::symlink::link ${SCRIPTDIR}/${SCRIPT_NAME} ${BINDIR}/${SCRIPT_NAME}
-    for flag in ${flags}; do
-      installd::${flag}
-    done
+    each 'installd::$1' ${flags}
   fi
 }
