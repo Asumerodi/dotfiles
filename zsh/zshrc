@@ -50,7 +50,7 @@
   [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
   # if in tmux launch fzf in tmux pane
-  [[ -v TMUX ]] \
+  [[ ${+TMUX} == 1 ]] \
     && FZF_TMUX=1
 
   # hub alias to git
