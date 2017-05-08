@@ -140,7 +140,7 @@ main () {
               tidy golang git" \
     x11     "xmonad mpv xss-lock xautolock suckless-tools \
               compton libghc-xmonad-contrib-dev maim \
-              x11-xserver-utils qutebrowser git"
+              x11-xserver-utils libasound2-dev qutebrowser git"
   )
 
   # respect users current $XDG_CONFIG_HOME if set
