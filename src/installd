@@ -381,7 +381,7 @@ installd::x11 () {
           || {
             (
               cd ${TMPDIR}
-              tar -xJf ${DISTDIR}/dist/farbfeld-3.tar.xz
+              tar -xJf ${DISTDIR}/farbfeld-3.tar.xz
               cd farbfeld-3
               sudo make install
             )
