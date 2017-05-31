@@ -9,6 +9,7 @@ mafredri/zsh-async
 zsh-users/zsh-completions
 caarlos0/ports kind:path
 Tarrasch/zsh-functional
+RobSis/zsh-completion-generator
 
 # always last
 sindresorhus/pure
